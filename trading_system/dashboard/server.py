@@ -129,6 +129,55 @@ def zscore():
 def dashboard():
     return (Path(__file__).parent / "index.html").read_text()
 
+
+@app.get("/api/processes")
+def processes():
+    import subprocess
+    result = {}
+    
+    # Sprawdz monitor pairs trading
+    r1 = subprocess.run(["pgrep", "-f", "paper_trading_pairs_advanced_with_R"], 
+                       capture_output=True, text=True)
+    result["monitor"] = {
+        "name": "Pairs Trading Monitor",
+        "pid": r1.stdout.strip() or None,
+        "status": "running" if r1.stdout.strip() else "stopped",
+        "file": "paper_trading_pairs_advanced_with_R.py"
+    }
+    
+    # Sprawdz dashboard
+    r2 = subprocess.run(["pgrep", "-f", "dashboard/server"], 
+                       capture_output=True, text=True)
+    pids = [p for p in r2.stdout.strip().split() if p]
+    result["dashboard"] = {
+        "name": "Dashboard Server",
+        "pid": pids[0] if pids else None,
+        "status": "running" if pids else "stopped",
+        "file": "trading_system/dashboard/server.py"
+    }
+    
+    # Sprawdz cron
+    r3 = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
+    has_cron = "send_weekly_report" in r3.stdout
+    result["cron"] = {
+        "name": "Weekly Report (cron)",
+        "pid": None,
+        "status": "configured" if has_cron else "not configured",
+        "file": "send_weekly_report.sh"
+    }
+    
+    # Sprawdz auto_search
+    r4 = subprocess.run(["pgrep", "-f", "auto_search"],
+                       capture_output=True, text=True)
+    result["auto_search"] = {
+        "name": "Auto Search",
+        "pid": r4.stdout.strip() or None,
+        "status": "running" if r4.stdout.strip() else "stopped",
+        "file": "auto_search.py"
+    }
+    
+    return result
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000, reload=False)
