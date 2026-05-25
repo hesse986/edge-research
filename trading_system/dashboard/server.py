@@ -146,13 +146,13 @@ def processes():
     }
     
     # Sprawdz dashboard
-    r2 = subprocess.run(["pgrep", "-f", "uvicorn"], 
+    r2 = subprocess.run(["lsof", "-ti", "tcp:8000"],
                        capture_output=True, text=True)
-    pids = [p for p in r2.stdout.strip().split() if p]
+    pid = r2.stdout.strip().split("\n")[0]
     result["dashboard"] = {
         "name": "Dashboard Server",
-        "pid": pids[0] if pids else None,
-        "status": "running" if pids else "stopped",
+        "pid": pid or None,
+        "status": "running" if pid else "stopped",
         "file": "trading_system/dashboard/server.py"
     }
     
