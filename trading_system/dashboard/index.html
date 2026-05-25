@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edge Research Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0e1a; color:#e2e8f0; font-family:'SF Mono',monospace; font-size:13px; }
+  .header { padding:16px 24px; border-bottom:1px solid #1e2538; display:flex; justify-content:space-between; align-items:center; }
+  .header h1 { color:#4e9af1; font-size:16px; letter-spacing:2px; }
+  .header .status { color:#00d09c; font-size:11px; }
+  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; padding:16px 24px; }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:0 24px 16px; }
+  .grid-3 { display:grid; grid-template-columns:2fr 1fr; gap:12px; padding:0 24px 16px; }
+  .card { background:#141824; border:1px solid #1e2538; border-radius:8px; padding:16px; }
+  .card-title { color:#64748b; font-size:10px; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+  .stat-value { font-size:22px; font-weight:bold; }
+  .green { color:#00d09c; }
+  .red { color:#ff4757; }
+  .blue { color:#4e9af1; }
+  .yellow { color:#ffd32a; }
+  .gray { color:#64748b; }
+  table { width:100%; border-collapse:collapse; }
+  th { color:#64748b; font-size:10px; letter-spacing:1px; text-align:left; padding:6px 8px; border-bottom:1px solid #1e2538; }
+  td { padding:6px 8px; border-bottom:1px solid #0f1420; font-size:12px; }
+  tr:hover td { background:#1a2035; }
+  .badge { padding:2px 8px; border-radius:4px; font-size:10px; font-weight:bold; }
+  .badge-flat   { background:#1e2538; color:#64748b; }
+  .badge-long   { background:#0d3320; color:#00d09c; }
+  .badge-short  { background:#3d1020; color:#ff4757; }
+  .badge-open   { background:#0d2040; color:#4e9af1; }
+  .badge-closed { background:#1e2538; color:#64748b; }
+  .zscore-bar { height:6px; border-radius:3px; background:#1e2538; margin-top:6px; position:relative; overflow:visible; }
+  .zscore-fill { height:100%; border-radius:3px; transition:width 0.5s; }
+  .zscore-marker { position:absolute; top:-3px; width:2px; height:12px; background:#fff; border-radius:1px; }
+  canvas { max-height:200px; }
+  .refresh-btn { background:#1e2538; border:1px solid #2d3748; color:#e2e8f0; padding:4px 12px; border-radius:4px; cursor:pointer; font-size:11px; }
+  .refresh-btn:hover { background:#2d3748; }
+  .sub { color:#64748b; font-size:10px; margin-top:2px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⟨ EDGE RESEARCH DASHBOARD ⟩</h1>
+  <div style="display:flex;gap:16px;align-items:center;">
+    <span class="status" id="updated">Ładowanie...</span>
+    <button class="refresh-btn" onclick="loadAll()">↻ Odśwież</button>
+  </div>
+</div>
+
+<!-- Stats row -->
+<div class="grid" id="stats-grid">
+  <div class="card"><div class="card-title">Kapitał (backtest)</div><div class="stat-value green" id="s-capital">—</div><div class="sub" id="s-return">—</div></div>
+  <div class="card"><div class="card-title">Sharpe Ratio</div><div class="stat-value blue" id="s-sharpe">—</div><div class="sub" id="s-trades">—</div></div>
+  <div class="card"><div class="card-title">Win Rate</div><div class="stat-value" id="s-wr">—</div><div class="sub" id="s-pf">—</div></div>
+  <div class="card"><div class="card-title">Max Drawdown</div><div class="stat-value red" id="s-dd">—</div><div class="sub">backtest 2023-2026</div></div>
+</div>
+
+<!-- Z-score row -->
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title">Live Z-Score (4H) — Binance</div>
+    <div id="zscore-container" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px;">
+      <div id="z-ltc_xrp"></div>
+      <div id="z-ltc_ada"></div>
+      <div id="z-xrp_ada"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Paper Trading Stats</div>
+    <div id="paper-stats">
+      <div class="gray" style="margin-top:8px;">Ładowanie...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Equity curve -->
+<div style="padding:0 24px 16px;">
+  <div class="card">
+    <div class="card-title">Equity Curve — Backtest ($1000 start, 1% risk/trade)</div>
+    <canvas id="equity-chart"></canvas>
+  </div>
+</div>
+
+<!-- Positions + trades -->
+<div class="grid-3">
+  <div class="card">
+    <div class="card-title">Historia transakcji (paper)</div>
+    <table>
+      <tr><th>Czas</th><th>Para</th><th>Kierunek</th><th>Z-entry</th><th>R</th><th>Powód</th></tr>
+      <tbody id="trades-body"><tr><td colspan="6" class="gray">Brak zamkniętych transakcji</td></tr></tbody>
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-title">Aktywne pozycje</div>
+    <table>
+      <tr><th>Para</th><th>Kierunek</th><th>Z</th><th>SL</th></tr>
+      <tbody id="positions-body"><tr><td colspan="4" class="gray">Brak otwartych pozycji</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+let equityChart = null;
+
+function zColor(z) {
+  if (z >  2) return '#ff4757';
+  if (z < -2) return '#00d09c';
+  if (Math.abs(z) > 1) return '#ffd32a';
+  return '#64748b';
+}
+
+function renderZscore(data) {
+  Object.entries(data).forEach(([key, z]) => {
+    if (!z || z.error) return;
+    const pct = Math.min(Math.abs(z.z) / 3 * 100, 100);
+    const color = zColor(z.z);
+    const badge = `badge-${z.signal.toLowerCase()}`;
+    document.getElementById(`z-${key}`).innerHTML = `
+      <div style="font-size:11px;color:#64748b;margin-bottom:4px;">${z.pair}</div>
+      <div style="font-size:20px;font-weight:bold;color:${color};">${z.z.toFixed(2)}</div>
+      <div style="margin:4px 0;"><span class="badge ${badge}">${z.signal}</span></div>
+      <div class="zscore-bar">
+        <div class="zscore-fill" style="width:${pct}%;background:${color};"></div>
+      </div>
+      <div style="color:#64748b;font-size:10px;margin-top:4px;">${z.pair.split('/')[0]}: ${z.price1} | ${z.pair.split('/')[1]}: ${z.price2}</div>
+    `;
+  });
+}
+
+function renderStats(data) {
+  const bt = data.backtest || {};
+  document.getElementById('s-capital').textContent = bt.capital ? `$${bt.capital.toLocaleString()}` : '—';
+  document.getElementById('s-return').textContent  = bt.total_R  ? `Total R: ${bt.total_R}` : '';
+  document.getElementById('s-sharpe').textContent  = bt.sharpe   ? bt.sharpe : '—';
+  document.getElementById('s-trades').textContent  = bt.n        ? `${bt.n} transakcji` : '';
+  const wr = bt.win_rate;
+  const wrEl = document.getElementById('s-wr');
+  wrEl.textContent = wr ? `${wr}%` : '—';
+  wrEl.className = `stat-value ${wr > 50 ? 'green' : wr > 45 ? 'yellow' : 'red'}`;
+  document.getElementById('s-pf').textContent  = bt.profit_factor ? `PF: ${bt.profit_factor}` : '';
+  const dd = bt.max_drawdown;
+  document.getElementById('s-dd').textContent = dd ? `${dd}%` : '—';
+
+  // Paper stats
+  const pt = data.paper || {};
+  const ps = document.getElementById('paper-stats');
+  if (!pt.n) {
+    ps.innerHTML = '<div class="gray" style="margin-top:8px;">Brak danych paper trading</div>';
+  } else {
+    ps.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+        <div><div class="card-title">Transakcji</div><div class="stat-value blue">${pt.n}</div></div>
+        <div><div class="card-title">Win Rate</div><div class="stat-value ${pt.win_rate>50?'green':'red'}">${pt.win_rate}%</div></div>
+        <div><div class="card-title">Mean R</div><div class="stat-value ${pt.mean_R>0?'green':'red'}">${pt.mean_R}</div></div>
+        <div><div class="card-title">Kapitał</div><div class="stat-value green">$${pt.capital}</div></div>
+      </div>`;
+  }
+
+  document.getElementById('updated').textContent = `Aktualizacja: ${new Date(data.updated_at).toLocaleTimeString('pl')}`;
+}
+
+function renderEquity(data) {
+  const eq  = data.equity || [];
+  const ctx = document.getElementById('equity-chart').getContext('2d');
+  if (equityChart) equityChart.destroy();
+  equityChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: eq.map((_, i) => i),
+      datasets: [{
+        data: eq,
+        borderColor: '#4e9af1',
+        backgroundColor: 'rgba(78,154,241,0.05)',
+        borderWidth: 1.5,
+        pointRadius: 0,
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { display: false },
+        y: {
+          grid: { color: '#1e2538' },
+          ticks: { color: '#64748b', callback: v => `$${v.toLocaleString()}` }
+        }
+      }
+    }
+  });
+}
+
+function renderTrades(data) {
+  const closed = data.closed || [];
+  const tbody  = document.getElementById('trades-body');
+  if (!closed.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="gray">Brak zamkniętych transakcji</td></tr>';
+    return;
+  }
+  tbody.innerHTML = closed.map(t => {
+    const r = parseFloat(t.result_R || 0);
+    const rColor = r > 0 ? 'green' : r < 0 ? 'red' : 'gray';
+    return `<tr>
+      <td class="gray">${(t.timestamp||'').substring(0,16)}</td>
+      <td class="blue">${t.pair||''}</td>
+      <td><span class="badge badge-${(t.direction||'').toLowerCase().includes('long')?'long':'short'}">${(t.direction||'').substring(0,12)}</span></td>
+      <td>${parseFloat(t.z_score||0).toFixed(2)}</td>
+      <td class="${rColor}">${r.toFixed(3)}</td>
+      <td class="gray">${t.notes||''}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderPositions(data) {
+  const open  = data.open || [];
+  const tbody = document.getElementById('positions-body');
+  if (!open.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="gray">Brak otwartych pozycji</td></tr>';
+    return;
+  }
+  tbody.innerHTML = open.map(p => `<tr>
+    <td class="blue">${p.pair||''}</td>
+    <td><span class="badge badge-open">${(p.direction||'').substring(0,10)}</span></td>
+    <td>${parseFloat(p.z_score||0).toFixed(2)}</td>
+    <td class="red">${p.sl||'—'}</td>
+  </tr>`).join('');
+}
+
+async function loadAll() {
+  try {
+    const [stats, eq, pos, zs] = await Promise.all([
+      fetch('/api/stats').then(r=>r.json()),
+      fetch('/api/equity').then(r=>r.json()),
+      fetch('/api/positions').then(r=>r.json()),
+      fetch('/api/zscore').then(r=>r.json()),
+    ]);
+    renderStats(stats);
+    renderEquity(eq);
+    renderTrades(pos);
+    renderPositions(pos);
+    renderZscore(zs);
+  } catch(e) {
+    document.getElementById('updated').textContent = 'Błąd połączenia z serwerem';
+  }
+}
+
+loadAll();
+setInterval(loadAll, 300000); // auto-refresh co 5 minut
+</script>
+</body>
+</html>
