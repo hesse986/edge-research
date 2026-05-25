@@ -1,0 +1,6 @@
+cost: 0.0002
+direction: both
+edge: liquidation_proxy
+name: xrp_liquidation_85
+pct_threshold: 85.0
+timeframe: 4h

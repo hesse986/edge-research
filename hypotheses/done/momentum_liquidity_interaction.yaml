@@ -1,0 +1,14 @@
+combination_of:
+- momentum_regime_v2
+- volume_climax_reversal
+direction: both
+edge: momentum_regime_v2
+mechanism: W małych krypto arbitraż jest utrudniony, co pozwala anomaliom przetrwać
+  dłużej. Momentum jest wzmacniane przez brak płynności
+name: momentum_liquidity_interaction
+notes: Użyj momentum_regime_v2 z filtrem na niski wolumen - odwrotność volume_climax
+prereg_date: '2026-05-25'
+priority: high
+source: https://www.sciencedirect.com/science/article/abs/pii/S1057521924007415
+timeframes:
+- 4h

@@ -1,0 +1,5 @@
+cost: 0.0002
+direction: both
+edge: failed_breakout_range_v3
+name: auto_failed_breakout_range_v3
+timeframe: 4h

@@ -1,0 +1,5 @@
+cost: 0.0002
+direction: both
+edge: sweep_reclaim_v3_continuation
+name: auto_sweep_reclaim_v3_continuation
+timeframe: 4h

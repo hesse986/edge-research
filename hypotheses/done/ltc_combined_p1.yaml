@@ -1,0 +1,6 @@
+cost: 0.0002
+direction: both
+edge: ltc_failed_breakout_funding
+name: ltc_combined_p1
+pct_threshold: 85.0
+timeframe: 4h

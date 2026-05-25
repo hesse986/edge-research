@@ -1,0 +1,5 @@
+name: cross_exchange_premium
+edge: cross_exchange_premium
+timeframes: ["4h"]
+direction: both
+cost: 0.0002

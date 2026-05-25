@@ -1,0 +1,15 @@
+combination_of:
+- momentum_regime_v2
+- keltner_range_reversion
+direction: both
+edge: combination
+mechanism: Momentum w krypto niesie ryzyko crashu. Zarządzanie rozmiarem pozycji przez
+  Keltner Channels redukuje drawdowns
+name: adaptive_trend_volatility_managed
+notes: Momentum jako główny sygnał, Keltner range jako filtr volatility - mniejsze
+  pozycje gdy cena poza Keltner
+prereg_date: '2026-05-25'
+priority: high
+source: https://arxiv.org/pdf/2602.11708
+timeframes:
+- 4h

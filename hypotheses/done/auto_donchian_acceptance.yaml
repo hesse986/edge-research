@@ -1,0 +1,5 @@
+cost: 0.0002
+direction: both
+edge: donchian_acceptance
+name: auto_donchian_acceptance
+timeframe: 4h

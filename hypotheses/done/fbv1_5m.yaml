@@ -1,0 +1,6 @@
+cost: 0.0008
+direction: both
+edge: failed_breakout_v1
+name: fbv1_5m
+timeframes:
+- 5m

@@ -1,0 +1,26 @@
+# Dane i cache (za duże na GitHub)
+cache/
+*.pkl
+*.h5
+
+# Logi
+*.log
+*.txt
+nohup.out
+
+# Wyniki (opcjonalnie możesz commitować)
+results_*.csv
+
+# Python
+venv/
+__pycache__/
+*.pyc
+.env
+
+# System
+.DS_Store
+paper_trades*.csv
+backtest_trades*.csv
+equity_curve*.png
+search_history.json
+tested_hypotheses.json

@@ -1,0 +1,15 @@
+combination_of:
+- funding_exhaustion_v2
+- liquidation_proxy
+direction: short
+edge: liquidation_proxy
+mechanism: Jump-and-crisis model shows liquidation-driven crashes generate large negative
+  basis spikes with slow recoveries. High funding + liquidations = cascade risk
+name: funding_liquidation_cascade
+notes: Short when funding >0.05% AND liquidation volume spikes >2 std dev
+prereg_date: '2026-05-25'
+priority: medium
+source: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6185958
+timeframes:
+- 15m
+- 1h

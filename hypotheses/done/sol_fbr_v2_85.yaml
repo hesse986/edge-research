@@ -1,0 +1,6 @@
+cost: 0.0002
+direction: both
+edge: failed_breakout_range_v2
+name: sol_fbr_v2_85
+pct_threshold: 85.0
+timeframe: 4h

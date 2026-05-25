@@ -1,0 +1,6 @@
+cost: 0.0005
+direction: both
+edge: compression_breakout_v2
+name: comp_v2_15m
+timeframes:
+- 15m

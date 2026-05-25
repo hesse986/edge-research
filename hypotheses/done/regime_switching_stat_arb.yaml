@@ -1,0 +1,15 @@
+combination_of:
+- compression_breakout_v2
+- funding_momentum_divergence
+direction: both
+edge: combination
+mechanism: Modele latent-switching excellują w łapaniu regime shifts. Kombinacja breakout
+  + momentum divergence może identyfikować zmiany reżimów
+name: regime_switching_stat_arb
+notes: Compression breakout jako setup + funding momentum divergence jako potwierdzenie
+  zmiany reżimu
+prereg_date: '2026-05-25'
+priority: medium
+source: https://arxiv.org/html/2508.02758v1
+timeframes:
+- 4h

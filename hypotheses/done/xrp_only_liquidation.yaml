@@ -1,0 +1,5 @@
+cost: 0.0002
+direction: both
+edge: liquidation_proxy
+name: xrp_only_liquidation
+timeframe: 4h

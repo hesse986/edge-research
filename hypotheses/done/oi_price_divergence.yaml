@@ -1,0 +1,5 @@
+name: oi_price_divergence
+edge: oi_price_divergence
+timeframes: ["4h"]
+direction: both
+cost: 0.0002

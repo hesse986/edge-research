@@ -1,0 +1,5 @@
+name: funding_extremes_v1
+edge: funding_extremes_v1
+direction: both
+timeframes: [4h]
+prereg_date: "2026-05-25"

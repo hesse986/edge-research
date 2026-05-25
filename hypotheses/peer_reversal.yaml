@@ -1,0 +1,5 @@
+name: peer_reversal
+edge: peer_reversal
+timeframes: ["1D"]
+direction: long
+cost: 0.001

@@ -1,0 +1,6 @@
+cost: 0.0002
+direction: both
+edge: feargreed_extreme
+name: feargreed_1h
+timeframes:
+- 1h

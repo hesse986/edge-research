@@ -1,0 +1,5 @@
+name: breakout_retest_momentum_filter
+edge: breakout_retest_v2_momentum_filter
+direction: long
+timeframes: [4h]
+prereg_date: "2026-05-25"

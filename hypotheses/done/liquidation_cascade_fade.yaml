@@ -1,0 +1,15 @@
+combination_of:
+- liquidation_proxy
+- panic_no_followthrough
+direction: both
+edge: combination
+mechanism: Liquidation proxy + panic no followthrough = overextended move bez fundamentów.
+  Mean reversion prawdopodobny
+name: liquidation_cascade_fade
+notes: Już testowane pojedynczo, ale kombinacja może być silniejsza - liquidation
+  jako setup, panic jako timing
+prereg_date: '2026-05-25'
+priority: medium
+source: https://www.researchgate.net/publication/377457967_Time-Series_and_Cross-Sectional_Momentum_in_the_Cryptocurrency_Market
+timeframes:
+- 4h

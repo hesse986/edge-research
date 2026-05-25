@@ -1,0 +1,6 @@
+cost: 0.0002
+direction: long
+edge: compression_breakout_v2
+name: sol_compression_85
+pct_threshold: 85.0
+timeframe: 4h

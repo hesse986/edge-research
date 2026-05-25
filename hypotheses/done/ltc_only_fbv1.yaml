@@ -1,0 +1,5 @@
+cost: 0.0002
+direction: both
+edge: failed_breakout_v1
+name: ltc_only_fbv1
+timeframe: 4h

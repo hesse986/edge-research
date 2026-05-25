@@ -1,0 +1,6 @@
+cost: 0.0008
+direction: both
+edge: liquidation_proxy
+name: liq_proxy_5m
+timeframes:
+- 5m

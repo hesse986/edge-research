@@ -1,0 +1,6 @@
+cost: 0.0002
+direction: both
+edge: wick_pressure
+name: wick_pressure_1h
+timeframes:
+- 1h

@@ -1,0 +1,12 @@
+combination_of: []
+direction: short
+edge: funding_exhaustion_v2
+mechanism: Leveraged retail traders są podatni na zmiany warunków kredytowych. Ekstremalne
+  funding rates sygnalizują stress w systemie
+name: funding_credit_spread_sensitivity
+notes: Funding exhaustion jako proxy dla credit spread widening
+prereg_date: '2026-05-25'
+priority: high
+source: https://arxiv.org/html/2604.26747v1
+timeframes:
+- 4h

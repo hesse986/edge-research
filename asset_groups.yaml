@@ -1,0 +1,16 @@
+calibration:
+  - BTC/USDT
+  - ETH/USDT
+
+validation:
+  - SOL/USDT
+  - BNB/USDT
+  - XRP/USDT
+  - LINK/USDT
+  - LTC/USDT
+  - DOGE/USDT
+
+holdout:
+  - ADA/USDT
+  - DOT/USDT
+  - AVAX/USDT

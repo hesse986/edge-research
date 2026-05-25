@@ -1,0 +1,6 @@
+cost: 0.0002
+direction: both
+edge: funding_confluence
+name: funding_confluence_4h
+timeframes:
+- 4h

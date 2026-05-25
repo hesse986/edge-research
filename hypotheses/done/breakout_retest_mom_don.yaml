@@ -1,0 +1,5 @@
+name: breakout_retest_mom_don
+edge: breakout_retest_v2_mom_don_filter
+direction: long
+timeframes: [4h]
+prereg_date: "2026-05-25"

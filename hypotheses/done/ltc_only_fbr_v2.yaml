@@ -1,0 +1,5 @@
+cost: 0.0002
+direction: both
+edge: failed_breakout_range_v2
+name: ltc_only_fbr_v2
+timeframe: 4h

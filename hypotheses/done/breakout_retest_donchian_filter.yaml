@@ -1,0 +1,5 @@
+name: breakout_retest_donchian_filter
+edge: breakout_retest_v2_donchian_filter
+direction: long
+timeframes: [4h]
+prereg_date: "2026-05-25"

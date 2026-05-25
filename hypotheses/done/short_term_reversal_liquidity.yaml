@@ -1,0 +1,5 @@
+name: short_term_reversal_liquidity
+edge: short_term_reversal_liquidity
+timeframes: ["4h"]
+direction: both
+cost: 0.0002

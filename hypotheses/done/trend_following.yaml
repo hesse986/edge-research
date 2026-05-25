@@ -1,0 +1,5 @@
+name: trend_following
+edge: trend_following
+timeframes: ["4h"]
+direction: both
+cost: 0.0002

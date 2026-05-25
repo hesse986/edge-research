@@ -1,0 +1,5 @@
+cost: 0.0002
+direction: both
+edge: failed_breakout_range_v2
+name: forward_fbr_v2_xrp_ltc_ada
+timeframe: 4h

@@ -1,0 +1,5 @@
+cost: 0.0002
+direction: both
+edge: ltc_failed_breakout_funding
+name: ltc_only_combined
+timeframe: 4h

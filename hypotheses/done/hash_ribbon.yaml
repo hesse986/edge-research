@@ -1,0 +1,5 @@
+name: hash_ribbon
+edge: hash_ribbon
+timeframes: ["1D"]
+direction: both
+cost: 0.001

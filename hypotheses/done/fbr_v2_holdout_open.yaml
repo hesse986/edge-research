@@ -1,0 +1,5 @@
+cost: 0.0002
+direction: both
+edge: failed_breakout_range_v2
+name: fbr_v2_holdout_open
+timeframe: 4h

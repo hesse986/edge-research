@@ -1,0 +1,5 @@
+cost: 0.0002
+direction: both
+edge: funding_extremes_v1
+name: ltc_only_funding_ext
+timeframe: 4h

@@ -1,0 +1,15 @@
+combination_of:
+- compression_breakout_v2
+- keltner_range_reversion
+direction: both
+edge: keltner_range_reversion
+mechanism: When funding rates compress to historically tight ranges, it signals uncertainty.
+  Breakouts from compression lead to directional moves as traders reposition
+name: funding_keltner_squeeze
+notes: Use Keltner channels on funding rate itself (not price). Trade breakouts after
+  24h+ compression
+prereg_date: '2026-05-25'
+priority: medium
+source: https://www.sciencedirect.com/science/article/pii/S2096720925000818
+timeframes:
+- 4h

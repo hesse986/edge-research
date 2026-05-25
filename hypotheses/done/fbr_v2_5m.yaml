@@ -1,0 +1,6 @@
+cost: 0.0008
+direction: both
+edge: failed_breakout_range_v2
+name: fbr_v2_5m
+timeframes:
+- 5m
