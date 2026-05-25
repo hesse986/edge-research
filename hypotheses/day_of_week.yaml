@@ -1,0 +1,5 @@
+name: day_of_week_effect
+edge: day_of_week_effect
+timeframes: ["1D"]
+direction: both
+cost: 0.001

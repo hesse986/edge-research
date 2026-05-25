@@ -1,0 +1,15 @@
+combination_of:
+- funding_exhaustion_v2
+- panic_no_followthrough
+direction: long
+edge: funding_exhaustion_v2
+mechanism: Gdy funding spada poniżej -20%, oznacza panikę i forced unwinding longów.
+  Historycznie to lokalne dołki gdy funding < -30%
+name: funding_cascade_divergence
+notes: Funding -35% = ekstremum strachu, Fear&Greed 11 = historyczne dołki
+prereg_date: '2026-05-25'
+priority: high
+source: https://www.coinchange.io/blog/bitcoins-2-billion-reckoning-how-novembers-liquidations-cascade-exposed-cryptos-structural-fragilities
+timeframes:
+- 4h
+- 1h

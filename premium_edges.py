@@ -176,3 +176,29 @@ def peer_reversal(df, peers_df=None, signal_threshold=2.0):
                     continue
 
     return signals
+
+
+def day_of_week_effect(df, long_days=None, short_days=None):
+    """
+    Weekend/day-of-week effect.
+    long_days: lista dni (0=Pon, 6=Nd) do kupna na zamknięciu
+    short_days: lista dni do shortu na zamknięciu
+    """
+    import pandas as pd
+    if long_days is None:
+        long_days  = [0, 4]   # Poniedziałek, Piątek
+    if short_days is None:
+        short_days = [6]       # Niedziela
+
+    signals = []
+    index = df.index
+    if not hasattr(index, "dayofweek"):
+        index = pd.DatetimeIndex(index)
+
+    for i in range(1, len(df)):
+        dow = index[i].dayofweek
+        if dow in long_days:
+            signals.append((i, 1))
+        elif dow in short_days:
+            signals.append((i, -1))
+    return signals

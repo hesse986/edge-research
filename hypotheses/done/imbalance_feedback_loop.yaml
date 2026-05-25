@@ -1,0 +1,16 @@
+combination_of:
+- sweep_reclaim_v2
+- momentum_regime_v2
+direction: short
+edge: sweep_reclaim_v2
+mechanism: Początkowy spadek tworzy imbalance → algo sprzedaż → większy imbalance
+  → więcej sprzedaży. Model wykrywa początek pętli zwrotnej
+name: imbalance_feedback_loop
+notes: Arxiv potwierdza że imbalance-based modele mogą tworzyć feedback loop podczas
+  flash crashy
+prereg_date: '2026-05-25'
+priority: high
+source: https://arxiv.org/html/2602.00776v1
+timeframes:
+- 5m
+- 15m

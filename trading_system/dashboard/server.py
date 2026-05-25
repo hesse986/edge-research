@@ -146,7 +146,7 @@ def processes():
     }
     
     # Sprawdz dashboard
-    r2 = subprocess.run(["pgrep", "-f", "dashboard/server"], 
+    r2 = subprocess.run(["pgrep", "-f", "uvicorn"], 
                        capture_output=True, text=True)
     pids = [p for p in r2.stdout.strip().split() if p]
     result["dashboard"] = {

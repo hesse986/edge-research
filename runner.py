@@ -31,6 +31,7 @@ VALIDATION_START = "2022-01-01"
 VALIDATION_END   = "2025-01-01"
 
 EDGE_MAP = {
+    "day_of_week_effect":            pe.day_of_week_effect,
     "peer_reversal":                  pe.peer_reversal,
     "hash_ribbon":                    pe.hash_ribbon,
 

@@ -1,0 +1,16 @@
+combination_of:
+- liquidation_proxy
+- volume_climax_reversal
+direction: short
+edge: liquidation_proxy
+mechanism: Wieloryby ustanawiają duże krótkie pozycje przed publikacją makro newsów,
+  wiedząc że wywołają kaskadę likwidacji longów. Szukamy nagłego wzrostu OI przy spadku
+  ceny
+name: whale_preposition_cascade
+notes: 14:27 UTC - wieloryby otworzyły shorty, 21:15 UTC - kaskada. 7h przewagi
+prereg_date: '2026-05-25'
+priority: high
+source: https://blog.amberdata.io/how-3.21b-vanished-in-60-seconds-october-2025-crypto-crash-explained-through-7-charts
+timeframes:
+- 4h
+- 1h
