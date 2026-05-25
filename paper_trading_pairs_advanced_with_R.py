@@ -12,6 +12,9 @@ sys.path.insert(0, '.')
 
 import data as datamod
 from sklearn.linear_model import LinearRegression
+import sys
+sys.path.insert(0, '.')
+from trading_system.risk.risk_agent import position_size_pairs, CAPITAL
 
 # ==================================================
 # KONFIGURACJA
@@ -114,24 +117,28 @@ def main():
                     sl = entry_price - SL_MULT * atr
                     tp = entry_price + RR * SL_MULT * atr
                     direction_str = f"SHORT_{a1.split('/')[0]}_LONG_{a2.split('/')[0]}"
-                    entry_data[name] = {"entry_time": now, "entry_z": z, "entry_spread": entry_price, "sl": sl, "tp": tp}
+                    sizing = position_size_pairs(a1, a2, HEDGE_RATIOS[name], CAPITAL)
+                    entry_data[name] = {"entry_time": now, "entry_z": z, "entry_spread": entry_price, "sl": sl, "tp": tp, "sizing": sizing}
                     with BASE_LOG.open("a", newline="") as f:
                         writer = csv.writer(f)
                         writer.writerow([now, name, direction_str, f"{z:.3f}", f"{spread:.2f}",
-                                         f"{entry_price:.2f}", f"{sl:.2f}", f"{tp:.2f}", "OPEN", "", "", "paper_trade"])
-                    print(f"  *** SYGNAŁ: {direction_str} (Z={z:.2f})")
+                                         f"{entry_price:.2f}", f"{sl:.2f}", f"{tp:.2f}", "OPEN", "", "",
+                                         f"units={sizing['units_symbol1']:.4f} usd={sizing['usd_per_leg']:.1f}"])
+                    print(f"  *** SYGNAŁ: {direction_str} (Z={z:.2f}) | {sizing['units_symbol1']:.4f} {a1[:3]} | ${sizing['usd_per_leg']:.1f}")
                 elif z < -ENTRY_Z:
                     pos = 1
                     entry_price = spread
                     sl = entry_price + SL_MULT * atr
                     tp = entry_price - RR * SL_MULT * atr
                     direction_str = f"LONG_{a1.split('/')[0]}_SHORT_{a2.split('/')[0]}"
-                    entry_data[name] = {"entry_time": now, "entry_z": z, "entry_spread": entry_price, "sl": sl, "tp": tp}
+                    sizing = position_size_pairs(a1, a2, HEDGE_RATIOS[name], CAPITAL)
+                    entry_data[name] = {"entry_time": now, "entry_z": z, "entry_spread": entry_price, "sl": sl, "tp": tp, "sizing": sizing}
                     with BASE_LOG.open("a", newline="") as f:
                         writer = csv.writer(f)
                         writer.writerow([now, name, direction_str, f"{z:.3f}", f"{spread:.2f}",
-                                         f"{entry_price:.2f}", f"{sl:.2f}", f"{tp:.2f}", "OPEN", "", "", "paper_trade"])
-                    print(f"  *** SYGNAŁ: {direction_str} (Z={z:.2f})")
+                                         f"{entry_price:.2f}", f"{sl:.2f}", f"{tp:.2f}", "OPEN", "", "",
+                                         f"units={sizing['units_symbol1']:.4f} usd={sizing['usd_per_leg']:.1f}"])
+                    print(f"  *** SYGNAŁ: {direction_str} (Z={z:.2f}) | {sizing['units_symbol1']:.4f} {a1[:3]} | ${sizing['usd_per_leg']:.1f}")
             else:
                 ed = entry_data[name]
                 exit_reason = None
