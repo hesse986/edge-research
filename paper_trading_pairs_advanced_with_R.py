@@ -5,7 +5,7 @@ import time
 import csv
 import numpy as np
 import pandas as pd
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 import sys
 sys.path.insert(0, '.')
@@ -96,6 +96,11 @@ def main():
 
     positions = {name: 0 for _, _, name in PAIRS}
     entry_data = {name: None for _, _, name in PAIRS}
+    # Circuit breaker: ile kolejnych strat na parę
+    consecutive_losses = {name: 0 for _, _, name in PAIRS}
+    circuit_breaker_until = {name: None for _, _, name in PAIRS}  # datetime do kiedy zablokowane
+    CB_MAX_LOSSES = 3      # ile kolejnych strat blokuje
+    CB_COOLDOWN_H = 24     # ile godzin blokady
 
     while True:
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
@@ -108,6 +113,16 @@ def main():
             print(f"[{now}] {name}: Z={z:.3f}, spread={spread:.2f}, atr={atr:.2f}")
 
             pos = positions[name]
+            # Sprawdź circuit breaker
+            cb_until = circuit_breaker_until[name]
+            if cb_until is not None:
+                if datetime.now(timezone.utc) < cb_until:
+                    print(f"  ⚠️  {name}: CIRCUIT BREAKER aktywny do {cb_until.strftime('%H:%M UTC')}")
+                    continue
+                else:
+                    circuit_breaker_until[name] = None
+                    consecutive_losses[name] = 0
+                    print(f"  ✅ {name}: circuit breaker wygasł")
             if pos == 0:
                 if z > ENTRY_Z:
                     pos = -1
@@ -167,6 +182,14 @@ def main():
                         writer.writerow([now, name, direction_str, f"{z:.3f}", f"{spread:.2f}",
                                          "", "", "", "CLOSED", f"{spread:.2f}", f"{r:.4f}", exit_reason])
                     print(f"  *** ZAMKNIĘCIE: {direction_str} przyczyna={exit_reason}, R={r:.2f}")
+                    # Aktualizuj circuit breaker
+                    if r < -0.5:
+                        consecutive_losses[name] += 1
+                        if consecutive_losses[name] >= CB_MAX_LOSSES:
+                            circuit_breaker_until[name] = datetime.now(timezone.utc) + timedelta(hours=CB_COOLDOWN_H)
+                            print(f"  🔴 {name}: CIRCUIT BREAKER aktywowany ({CB_MAX_LOSSES} straty z rzędu) – blokada {CB_COOLDOWN_H}H")
+                    else:
+                        consecutive_losses[name] = 0
                     pos = 0
                     entry_data[name] = None
             positions[name] = pos
