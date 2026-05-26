@@ -110,9 +110,9 @@ def positions():
 @app.get("/api/zscore")
 def zscore():
     pairs = [
-        ("LTC/USDT", "XRP/USDT", -26.72, "ltc_xrp"),
-        ("LTC/USDT", "ADA/USDT",  19.02, "ltc_ada"),
-        ("XRP/USDT", "ADA/USDT",   0.24, "xrp_ada"),
+        ("LTC/USDT",  "ADA/USDT",   19.02, "ltc_ada"),
+        ("ADA/USDT",  "LINK/USDT",   0.0199, "ada_link"),
+        ("BNB/USDT",  "SOL/USDT",    0.0393, "bnb_sol"),
     ]
     result = {}
     for s1, s2, h, name in pairs:

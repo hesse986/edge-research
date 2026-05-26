@@ -30,9 +30,9 @@ CHECK_EVERY = 60 * 60 * 4
 BASE_LOG = Path("paper_trades_pairs_advanced_R.csv")
 
 PAIRS = [
-    ("LTC/USDT", "XRP/USDT", "ltc_xrp"),
-    ("LTC/USDT", "ADA/USDT", "ltc_ada"),
-    ("XRP/USDT", "ADA/USDT", "xrp_ada"),
+    ("LTC/USDT",  "ADA/USDT",  "ltc_ada"),
+    ("ADA/USDT",  "LINK/USDT", "ada_link"),
+    ("BNB/USDT",  "SOL/USDT",  "bnb_sol"),
 ]
 
 HEDGE_RATIOS = {}
@@ -81,14 +81,12 @@ def init_log():
                              "entry_price", "sl", "tp", "status", "exit_price", "result_R", "notes"])
 
 def main():
-    for a1, a2, name in PAIRS:
-        try:
-            hedge = compute_hedge_ratio(a1, a2, HISTORY_START, "2024-01-01")
-            HEDGE_RATIOS[name] = hedge
-            print(f"Hedge ratio {name}: {hedge:.4f}")
-        except Exception as e:
-            print(f"Błąd obliczania hedge dla {name}: {e}")
-            sys.exit(1)
+    # Stałe hedge ratios z kalibracji 2023-2024
+    HEDGE_RATIOS["ltc_ada"]  =  19.0200
+    HEDGE_RATIOS["ada_link"] =   0.0199
+    HEDGE_RATIOS["bnb_sol"]  =   0.0393
+    for name, hedge in HEDGE_RATIOS.items():
+        print(f"Hedge ratio {name}: {hedge:.4f}")
 
     init_log()
     print(f"Paper trading monitor dla par: {[p[2] for p in PAIRS]}")

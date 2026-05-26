@@ -10,9 +10,19 @@ import pandas as pd
 from datetime import datetime
 
 import data as datamod
+try:
+    from trading_system.research.pairs_validation import pairs_pctMR as _pairs_pctMR
+    HAS_PAIRS_VALIDATION = True
+except:
+    HAS_PAIRS_VALIDATION = False
 import edges as edgemod
 import premium_edges as pe
-import data as datamod_global
+import data as datamod
+try:
+    from trading_system.research.pairs_validation import pairs_pctMR as _pairs_pctMR
+    HAS_PAIRS_VALIDATION = True
+except:
+    HAS_PAIRS_VALIDATION = False_global
 
 # ============================================================
 # STAŁE
