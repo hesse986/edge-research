@@ -15,6 +15,32 @@ import data as datamod
 from sklearn.linear_model import LinearRegression
 import sys
 import argparse
+
+def get_zscore_live(sym1, sym2, hedge, lookback=30):
+    """Pobiera live Z-score identycznie jak dashboard - ostatnie 40 świec 4H."""
+    import requests as _req
+    needed = lookback + 10
+    url = "https://api.binance.com/api/v3/klines"
+    try:
+        r1 = _req.get(url, params={"symbol": sym1.replace("/",""), "interval": "4h", "limit": needed}, timeout=10)
+        r2 = _req.get(url, params={"symbol": sym2.replace("/",""), "interval": "4h", "limit": needed}, timeout=10)
+        p1 = [float(c[4]) for c in r1.json()]
+        p2 = [float(c[4]) for c in r2.json()]
+        if len(p1) < lookback or len(p2) < lookback:
+            return None, None, None
+        spread = [p1[i] - hedge * p2[i] for i in range(len(p1))]
+        import numpy as _np
+        mean = _np.mean(spread[-lookback:])
+        std  = _np.std(spread[-lookback:])
+        z    = (spread[-1] - mean) / std if std > 0 else 0
+        # ATR spreadu
+        atr  = _np.mean([abs(spread[i]-spread[i-1]) for i in range(1, len(spread))])
+        return float(z), float(spread[-1]), float(atr)
+    except Exception as e:
+        print(f"  Błąd get_zscore_live: {e}")
+        return None, None, None
+
+
 sys.path.insert(0, '.')
 from trading_system.risk.risk_agent import position_size_pairs, CAPITAL
 
@@ -53,25 +79,12 @@ def compute_hedge_ratio(asset1, asset2, start, end):
     return model.coef_[0]
 
 def get_spread_and_zscore(asset1, asset2, hedge_ratio, lookback=LOOKBACK):
-    now = datetime.now(timezone.utc)
-    end = now.strftime("%Y-%m-%d")
-    start = (now - pd.Timedelta(days=lookback*2)).strftime("%Y-%m-%d")
-    df1_4h = datamod.load_binance_ohlcv(asset1, "4h", start, end, use_cache=False)
-    df2_4h = datamod.load_binance_ohlcv(asset2, "4h", start, end, use_cache=False)
-    common = df1_4h.index.intersection(df2_4h.index)
-    if len(common) < lookback + 5:
+    """Używa tej samej metody co dashboard - live dane z Binance API."""
+    z, spread, atr = get_zscore_live(asset1, asset2, hedge_ratio, lookback)
+    if z is None:
         return None, None, None, None
-    close1 = df1_4h.loc[common, "close"]
-    close2 = df2_4h.loc[common, "close"]
-    spread = close1 - hedge_ratio * close2
-    rolling_mean = spread.rolling(lookback).mean()
-    rolling_std = spread.rolling(lookback).std()
-    zscore = (spread - rolling_mean) / rolling_std
-    last_spread = spread.iloc[-1]
-    last_z = zscore.iloc[-1]
-    atr_spread = (spread.rolling(14).max() - spread.rolling(14).min()) / 14
-    last_atr = atr_spread.iloc[-1] if not np.isnan(atr_spread.iloc[-1]) else atr_spread.iloc[-2]
-    return last_spread, last_z, spread.index[-1], last_atr
+    now = datetime.now(timezone.utc)
+    return spread, z, now, atr if atr else 0.0
 
 def init_log():
     if not BASE_LOG.exists():
@@ -153,8 +166,8 @@ def main():
                     entry_data[name] = {"entry_time": now, "entry_z": z, "entry_spread": entry_price, "sl": sl, "tp": tp, "sizing": sizing}
                     with BASE_LOG.open("a", newline="") as f:
                         writer = csv.writer(f)
-                        writer.writerow([now, name, direction_str, f"{z:.3f}", f"{spread:.2f}",
-                                         f"{entry_price:.2f}", f"{sl:.2f}", f"{tp:.2f}", "OPEN", "", "",
+                        writer.writerow([now, name, direction_str, f"{z:.3f}", f"{spread:.6f}",
+                                         f"{entry_price:.6f}", f"{sl:.6f}", f"{tp:.6f}", "OPEN", "", "",
                                          f"units={sizing['units_symbol1']:.4f} usd={sizing['usd_per_leg']:.1f}"])
                     print(f"  *** SYGNAŁ: {direction_str} (Z={z:.2f}) | {sizing['units_symbol1']:.4f} {a1[:3]} | ${sizing['usd_per_leg']:.1f}")
                 elif z < -ENTRY_Z:
@@ -168,8 +181,8 @@ def main():
                     entry_data[name] = {"entry_time": now, "entry_z": z, "entry_spread": entry_price, "sl": sl, "tp": tp, "sizing": sizing}
                     with BASE_LOG.open("a", newline="") as f:
                         writer = csv.writer(f)
-                        writer.writerow([now, name, direction_str, f"{z:.3f}", f"{spread:.2f}",
-                                         f"{entry_price:.2f}", f"{sl:.2f}", f"{tp:.2f}", "OPEN", "", "",
+                        writer.writerow([now, name, direction_str, f"{z:.3f}", f"{spread:.6f}",
+                                         f"{entry_price:.6f}", f"{sl:.6f}", f"{tp:.6f}", "OPEN", "", "",
                                          f"units={sizing['units_symbol1']:.4f} usd={sizing['usd_per_leg']:.1f}"])
                     print(f"  *** SYGNAŁ: {direction_str} (Z={z:.2f}) | {sizing['units_symbol1']:.4f} {a1[:3]} | ${sizing['usd_per_leg']:.1f}")
             else:
@@ -199,8 +212,8 @@ def main():
                     r = ret / risk
                     with BASE_LOG.open("a", newline="") as f:
                         writer = csv.writer(f)
-                        writer.writerow([now, name, direction_str, f"{z:.3f}", f"{spread:.2f}",
-                                         "", "", "", "CLOSED", f"{spread:.2f}", f"{r:.4f}", exit_reason])
+                        writer.writerow([now, name, direction_str, f"{z:.3f}", f"{spread:.6f}",
+                                         "", "", "", "CLOSED", f"{spread:.6f}", f"{r:.4f}", exit_reason])
                     print(f"  *** ZAMKNIĘCIE: {direction_str} przyczyna={exit_reason}, R={r:.2f}")
                     # Aktualizuj circuit breaker
                     if r < -0.5:
