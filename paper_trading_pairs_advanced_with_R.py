@@ -94,7 +94,7 @@ def main():
     print(f"Paper trading monitor dla par: {[p[2] for p in PAIRS]}")
     print(f"Entry Z: {ENTRY_Z}, Exit Z: {EXIT_Z}, SL_MULT: {SL_MULT}, RR: {RR}")
     print(f"Log: {BASE_LOG}")
-    print("Monitoring co 4h...\n")
+    print("Monitoring co 3 minuty...\n")
 
     positions = {name: 0 for _, _, name in PAIRS}
     entry_data = {name: None for _, _, name in PAIRS}
