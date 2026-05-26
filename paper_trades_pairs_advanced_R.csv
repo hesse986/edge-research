@@ -1,3 +1,6 @@
 timestamp,pair,direction,z_score,spread,entry_price,sl,tp,status,exit_price,result_R,notes
 2026-05-26 11:10 UTC,ada_link,LONG_ADA_SHORT_LINK,-1.554,0.05,,,,CLOSED,0.05,3.6610,TP
 2026-05-26 17:44 UTC,ada_link,LONG_ADA_SHORT_LINK,-2.758,0.05,,,,CLOSED,0.05,1.8032,TP
+2026-05-26 17:49 UTC,ada_link,LONG_ADA_SHORT_LINK,-2.086,0.05,0.05,0.05,0.05,OPEN,,,units=731.2161 usd=175.7
+2026-05-26 17:51 UTC,ada_link,LONG_ADA_SHORT_LINK,-2.028,0.05,,,,CLOSED,0.05,2.9012,TP
+2026-05-26 17:53 UTC,ada_link,LONG_ADA_SHORT_LINK,-1.983,0.05,,,,CLOSED,0.05,2.9619,TP

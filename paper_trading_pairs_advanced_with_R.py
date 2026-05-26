@@ -56,10 +56,8 @@ def get_spread_and_zscore(asset1, asset2, hedge_ratio, lookback=LOOKBACK):
     now = datetime.now(timezone.utc)
     end = now.strftime("%Y-%m-%d")
     start = (now - pd.Timedelta(days=lookback*2)).strftime("%Y-%m-%d")
-    df1 = datamod.load_binance_ohlcv(asset1, "1h", start, end, use_cache=False)
-    df2 = datamod.load_binance_ohlcv(asset2, "1h", start, end, use_cache=False)
-    df1_4h = datamod.resample_ohlcv(df1, "4h")
-    df2_4h = datamod.resample_ohlcv(df2, "4h")
+    df1_4h = datamod.load_binance_ohlcv(asset1, "4h", start, end, use_cache=False)
+    df2_4h = datamod.load_binance_ohlcv(asset2, "4h", start, end, use_cache=False)
     common = df1_4h.index.intersection(df2_4h.index)
     if len(common) < lookback + 5:
         return None, None, None, None
