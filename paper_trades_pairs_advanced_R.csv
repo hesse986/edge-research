@@ -1,0 +1,2 @@
+timestamp,pair,direction,z_score,spread,entry_price,sl,tp,status,exit_price,result_R,notes
+2026-05-26 11:10 UTC,ada_link,LONG_ADA_SHORT_LINK,-1.554,0.05,,,,CLOSED,0.05,3.6610,TP

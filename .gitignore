@@ -19,7 +19,6 @@ __pycache__/
 
 # System
 .DS_Store
-paper_trades*.csv
 backtest_trades*.csv
 equity_curve*.png
 search_history.json
