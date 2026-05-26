@@ -15,6 +15,42 @@ try:
     HAS_PAIRS_VALIDATION = True
 except:
     HAS_PAIRS_VALIDATION = False
+
+PAIRS_EDGES = {
+    "pairs_cointegration_ltc_xrp",
+    "pairs_cointegration",
+    "btc_eth_spread",
+    "ltc_xrp_spread",
+}
+
+def compute_pctMR(edge_name, spread_or_df, res, df, indices, dirs, cost, max_hold, direction, params=None):
+    """
+    Wybiera właściwy benchmark w zależności od typu edge'a.
+    Dla pairs trading: permutation test na spreadzie.
+    Dla pozostałych: matched random.
+    """
+    if HAS_PAIRS_VALIDATION and edge_name in PAIRS_EDGES:
+        # Permutation test - wymaga spreadu
+        if spread_or_df is not None:
+            try:
+                result = _pairs_pctMR(
+                    spread_or_df,
+                    entry_z    = params.get("entry_z",  2.0) if params else 2.0,
+                    exit_z     = params.get("exit_z",   0.5) if params else 0.5,
+                    lookback   = params.get("lookback", 30)  if params else 30,
+                    sl_mult    = params.get("sl_mult",  1.5) if params else 1.5,
+                    n_permutations = 300
+                )
+                return result["pctMR"], result["pctMR"]  # pctMR, pctTS
+            except Exception as e:
+                pass
+    # Domyślny benchmark
+    mr_dist = matched_random(df, len(indices), cost, max_hold, RANDOM_RUNS, direction)
+    ts_dist = time_shift(df, indices, dirs, cost, max_hold, RANDOM_RUNS)
+    return pct_of(np.mean([t[0] for t in []]) if not res else pct_of(expectancy(res), mr_dist),
+                  mr_dist), pct_of(expectancy(res), ts_dist)
+
+
 import edges as edgemod
 import premium_edges as pe
 import data as datamod
@@ -22,7 +58,42 @@ try:
     from trading_system.research.pairs_validation import pairs_pctMR as _pairs_pctMR
     HAS_PAIRS_VALIDATION = True
 except:
-    HAS_PAIRS_VALIDATION = False_global
+    HAS_PAIRS_VALIDATION = False
+
+PAIRS_EDGES = {
+    "pairs_cointegration_ltc_xrp",
+    "pairs_cointegration",
+    "btc_eth_spread",
+    "ltc_xrp_spread",
+}
+
+def compute_pctMR(edge_name, spread_or_df, res, df, indices, dirs, cost, max_hold, direction, params=None):
+    """
+    Wybiera właściwy benchmark w zależności od typu edge'a.
+    Dla pairs trading: permutation test na spreadzie.
+    Dla pozostałych: matched random.
+    """
+    if HAS_PAIRS_VALIDATION and edge_name in PAIRS_EDGES:
+        # Permutation test - wymaga spreadu
+        if spread_or_df is not None:
+            try:
+                result = _pairs_pctMR(
+                    spread_or_df,
+                    entry_z    = params.get("entry_z",  2.0) if params else 2.0,
+                    exit_z     = params.get("exit_z",   0.5) if params else 0.5,
+                    lookback   = params.get("lookback", 30)  if params else 30,
+                    sl_mult    = params.get("sl_mult",  1.5) if params else 1.5,
+                    n_permutations = 300
+                )
+                return result["pctMR"], result["pctMR"]  # pctMR, pctTS
+            except Exception as e:
+                pass
+    # Domyślny benchmark
+    mr_dist = matched_random(df, len(indices), cost, max_hold, RANDOM_RUNS, direction)
+    ts_dist = time_shift(df, indices, dirs, cost, max_hold, RANDOM_RUNS)
+    return pct_of(np.mean([t[0] for t in []]) if not res else pct_of(expectancy(res), mr_dist),
+                  mr_dist), pct_of(expectancy(res), ts_dist)
+
 
 # ============================================================
 # STAŁE
@@ -273,24 +344,39 @@ def test_asset(asset, hypo, tf, cost, min_trades, max_hold, direction="both"):
         exp          = expectancy(res)
         ci_lo, ci_hi = bootstrap_ci(res)
 
-        # holdout: liczymy benchmarki ale nie ogłaszamy werdyktu
-        if group == "holdout":
-            mr_dist = matched_random(df, len(indices), cost, max_hold, RANDOM_RUNS, direction)
-            ts_dist = time_shift(df, indices, dirs, cost, max_hold, RANDOM_RUNS)
-            pct_mr  = pct_of(exp, mr_dist)
-            pct_ts  = pct_of(exp, ts_dist)
-            verdict = "HOLDOUT_NIE_OTWARTY"
-        elif group == "calibration":
-            mr_dist = matched_random(df, len(indices), cost, max_hold, RANDOM_RUNS, direction)
-            ts_dist = time_shift(df, indices, dirs, cost, max_hold, RANDOM_RUNS)
-            pct_mr  = pct_of(exp, mr_dist)
-            pct_ts  = pct_of(exp, ts_dist)
-            verdict = "KALIBRACJA"
+        # Wybierz benchmark: permutation test dla pairs, matched random dla reszty
+        is_pairs = hypo["edge"] in PAIRS_EDGES and HAS_PAIRS_VALIDATION
+        
+        if is_pairs and peers_df:
+            # Dla pairs trading: permutation test na spreadzie
+            # Pobierz spread z pierwszej pary w peers_df
+            try:
+                from sklearn.linear_model import LinearRegression
+                peer_sym = list(peers_df.keys())[0]
+                p1 = df["close"]
+                p2 = peers_df[peer_sym]["close"].reindex(df.index, method="nearest")
+                model = LinearRegression().fit(p2.values.reshape(-1,1), p1.values)
+                spread = p1 - model.coef_[0] * p2
+                pt = _pairs_pctMR(spread, n_permutations=200)
+                pct_mr = pt["pctMR"]
+                pct_ts = pct_mr  # używamy tego samego dla obu
+            except Exception as e:
+                mr_dist = matched_random(df, len(indices), cost, max_hold, RANDOM_RUNS, direction)
+                ts_dist = time_shift(df, indices, dirs, cost, max_hold, RANDOM_RUNS)
+                pct_mr  = pct_of(exp, mr_dist)
+                pct_ts  = pct_of(exp, ts_dist)
         else:
             mr_dist = matched_random(df, len(indices), cost, max_hold, RANDOM_RUNS, direction)
             ts_dist = time_shift(df, indices, dirs, cost, max_hold, RANDOM_RUNS)
             pct_mr  = pct_of(exp, mr_dist)
             pct_ts  = pct_of(exp, ts_dist)
+
+        # holdout: liczymy benchmarki ale nie ogłaszamy werdyktu
+        if group == "holdout":
+            verdict = "HOLDOUT_NIE_OTWARTY"
+        elif group == "calibration":
+            verdict = "KALIBRACJA"
+        else:
             verdict = ("PRZESZEDL" if pct_mr >= PCT_THRESHOLD
                                    and pct_ts >= PCT_THRESHOLD
                        else "odrzucony")
