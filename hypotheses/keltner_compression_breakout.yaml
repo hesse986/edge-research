@@ -1,0 +1,14 @@
+combination_of:
+- keltner_range_reversion
+- compression_breakout_v2
+direction: both
+edge: combination
+mechanism: Keltner Channels identify breakouts in volatile assets like crypto. When
+  combined with compression periods, captures explosive moves after consolidation
+name: keltner_compression_breakout
+notes: Enter when price breaks Keltner bands after volatility compression period
+prereg_date: '2026-05-26'
+priority: high
+source: https://ftmo.com/en/blog/three-phase-momentum-strategy-for-bitcoin/
+timeframes:
+- 4h

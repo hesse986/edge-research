@@ -1,0 +1,14 @@
+combination_of:
+- relative_strength_rotation
+- volume_climax_reversal
+direction: both
+edge: combination
+mechanism: Small cryptocurrencies show higher momentum returns. Volume climax indicates
+  potential exhaustion points for mean reversion
+name: size_momentum_volume_climax
+notes: Focus on small-cap coins with high relative strength, fade on volume climax
+prereg_date: '2026-05-26'
+priority: medium
+source: https://www.sciencedirect.com/science/article/abs/pii/S1544612321002208
+timeframes:
+- 4h

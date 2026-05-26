@@ -1,0 +1,16 @@
+combination_of:
+- momentum_regime_v2
+- funding_exhaustion_v2
+direction: both
+edge: combination
+mechanism: Risk-managed momentum shows Sharpe improvements from 1.12 to 1.42 in crypto.
+  When combined with funding exhaustion signals, can capture both momentum continuation
+  and reversal points
+name: volatility_managed_momentum_funding
+notes: Use realized volatility to scale momentum positions, enter reversals when funding
+  hits exhaustion levels
+prereg_date: '2026-05-26'
+priority: high
+source: https://www.sciencedirect.com/science/article/abs/pii/S1544612325011377
+timeframes:
+- 4h

@@ -8,11 +8,13 @@ import pandas as pd
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 import sys
+import argparse
 sys.path.insert(0, '.')
 
 import data as datamod
 from sklearn.linear_model import LinearRegression
 import sys
+import argparse
 sys.path.insert(0, '.')
 from trading_system.risk.risk_agent import position_size_pairs, CAPITAL
 
@@ -98,11 +100,28 @@ def main():
     entry_data = {name: None for _, _, name in PAIRS}
     # Circuit breaker: ile kolejnych strat na parę
     consecutive_losses = {name: 0 for _, _, name in PAIRS}
-    circuit_breaker_until = {name: None for _, _, name in PAIRS}  # datetime do kiedy zablokowane
-    CB_MAX_LOSSES = 3      # ile kolejnych strat blokuje
-    CB_COOLDOWN_H = 24     # ile godzin blokady
+    circuit_breaker_until = {name: None for _, _, name in PAIRS}
+    CB_MAX_LOSSES = 3
+    CB_COOLDOWN_H = 24
 
-    while True:
+    # Wczytaj stan otwartych pozycji z CSV
+    import csv as _csv
+    if BASE_LOG.exists():
+        with open(BASE_LOG) as _f:
+            for _row in _csv.DictReader(_f):
+                _name = _row.get("pair","")
+                if _row.get("status") == "OPEN" and _name in positions:
+                    positions[_name] = 1 if "LONG" in _row.get("direction","") else -1
+                    entry_data[_name] = {
+                        "entry_time":   _row.get("timestamp",""),
+                        "entry_z":      float(_row.get("z_score", 0)),
+                        "entry_spread": float(_row.get("spread", 0)),
+                        "sl":           float(_row.get("sl", 0)),
+                        "tp":           float(_row.get("tp", 0)),
+                    }
+                    print(f"  Wczytano otwartą pozycję: {_name} {_row.get('direction','')} z {_row.get('timestamp','')}")
+
+    while True:  # RUN_ONCE sprawdzane na końcu
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
         for a1, a2, name in PAIRS:
             hedge = HEDGE_RATIOS[name]
@@ -127,8 +146,10 @@ def main():
                 if z > ENTRY_Z:
                     pos = -1
                     entry_price = spread
-                    sl = entry_price - SL_MULT * atr
-                    tp = entry_price + RR * SL_MULT * atr
+                    # Minimalny ATR = 1% spreadu żeby uniknąć SL=entry
+                    atr_safe = max(atr, abs(entry_price) * 0.01)
+                    sl = entry_price - SL_MULT * atr_safe
+                    tp = entry_price + RR * SL_MULT * atr_safe
                     direction_str = f"SHORT_{a1.split('/')[0]}_LONG_{a2.split('/')[0]}"
                     sizing = position_size_pairs(a1, a2, HEDGE_RATIOS[name], CAPITAL)
                     entry_data[name] = {"entry_time": now, "entry_z": z, "entry_spread": entry_price, "sl": sl, "tp": tp, "sizing": sizing}
@@ -141,8 +162,9 @@ def main():
                 elif z < -ENTRY_Z:
                     pos = 1
                     entry_price = spread
-                    sl = entry_price + SL_MULT * atr
-                    tp = entry_price - RR * SL_MULT * atr
+                    atr_safe = max(atr, abs(entry_price) * 0.01)
+                    sl = entry_price + SL_MULT * atr_safe
+                    tp = entry_price - RR * SL_MULT * atr_safe
                     direction_str = f"LONG_{a1.split('/')[0]}_SHORT_{a2.split('/')[0]}"
                     sizing = position_size_pairs(a1, a2, HEDGE_RATIOS[name], CAPITAL)
                     entry_data[name] = {"entry_time": now, "entry_z": z, "entry_spread": entry_price, "sl": sl, "tp": tp, "sizing": sizing}
