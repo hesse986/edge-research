@@ -1,0 +1,5 @@
+name: funding_extreme_1h
+edge: funding_extreme_1h
+timeframes: ["1h"]
+direction: both
+cost: 0.0002

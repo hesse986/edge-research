@@ -1,0 +1,14 @@
+combination_of:
+- relative_strength_rotation
+direction: both
+edge: momentum_regime_v2
+mechanism: Rynki krypto cyklicznie przechodzą między stanami contango (futures > spot)
+  i backwardation (futures < spot). Identyfikacja punktów zwrotnych między reżimami
+  oferuje asymetryczne R/R
+name: basis_regime_rotation
+notes: Wykorzystanie relative strength między perpetuals a spot do identyfikacji rotacji
+prereg_date: '2026-05-26'
+priority: medium
+source: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5036933
+timeframes:
+- 4h

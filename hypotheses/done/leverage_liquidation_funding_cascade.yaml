@@ -1,0 +1,14 @@
+combination_of:
+- funding_momentum_divergence
+direction: both
+edge: liquidation_proxy
+mechanism: Wysokie funding rates zmuszają trader'ów z dużą dźwignią do zamykania pozycji,
+  co może prowadzić do kaskady likwidacji. Po takich wydarzeniach funding rate często
+  się odwraca
+name: leverage_liquidation_funding_cascade
+notes: Połączenie z funding momentum divergence może wskazać punkty zwrotne
+prereg_date: '2026-05-26'
+priority: high
+source: https://www.sciencedirect.com/science/article/pii/S2096720925000818
+timeframes:
+- 4h

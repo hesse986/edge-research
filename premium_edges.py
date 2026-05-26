@@ -202,3 +202,109 @@ def day_of_week_effect(df, long_days=None, short_days=None):
         elif dow in short_days:
             signals.append((i, -1))
     return signals
+
+
+def volume_spike_momentum(df, vol_z_threshold=2.0, lookback=20):
+    """
+    Volume spike momentum.
+    Gdy wolumen > mean+2*std i cena rośnie -> long następna świeca.
+    Gdy wolumen > mean+2*std i cena spada -> short następna świeca.
+    """
+    import pandas as pd
+    import numpy as np
+
+    close  = df["close"].to_numpy()
+    volume = df["volume"].to_numpy()
+
+    vol_s  = pd.Series(volume)
+    vol_ma = vol_s.rolling(lookback).mean().to_numpy()
+    vol_std= vol_s.rolling(lookback).std().to_numpy()
+
+    signals = []
+    for i in range(lookback + 1, len(df) - 1):
+        if vol_std[i] == 0 or np.isnan(vol_std[i]):
+            continue
+        vol_z = (volume[i] - vol_ma[i]) / vol_std[i]
+        if vol_z < vol_z_threshold:
+            continue
+        ret_curr = (close[i] - close[i-1]) / close[i-1]
+        if ret_curr > 0.005:
+            signals.append((i+1, 1))
+        elif ret_curr < -0.005:
+            signals.append((i+1, -1))
+    return signals
+
+
+def btc_leadlag_reversal(df, btc_df=None, threshold_pct=80, lookback=1):
+    """
+    BTC lead-lag reversal.
+    Gdy BTC mocno spada (bottom threshold%), kup alt następnej świecy.
+    Gdy BTC mocno rośnie (top threshold%), short alt następnej świecy.
+    btc_df: DataFrame z danymi BTC
+    """
+    import pandas as pd
+    import numpy as np
+
+    if btc_df is None:
+        return []
+
+    btc_ret = btc_df["close"].pct_change()
+    alt_ret = df["close"].pct_change()
+    common  = df.index.intersection(btc_df.index)
+
+    if len(common) < 50:
+        return []
+
+    btc_r   = btc_ret.reindex(common)
+    low_thr = btc_r.quantile((100 - threshold_pct) / 100)
+    hi_thr  = btc_r.quantile(threshold_pct / 100)
+
+    signals = []
+    for i in range(1, len(common) - 1):
+        date = common[i]
+        try:
+            z = btc_r.loc[date]
+        except:
+            continue
+        if pd.isna(z):
+            continue
+        idx = df.index.get_loc(common[i + 1]) if common[i + 1] in df.index else None
+        if idx is None:
+            continue
+        if z < low_thr:
+            signals.append((idx, 1))   # BTC spada mocno -> long alt
+        elif z > hi_thr:
+            signals.append((idx, -1))  # BTC rośnie mocno -> short alt
+    return signals
+
+
+def funding_extreme_1h(df, funding=None, extreme_pct=5, direction_filter="low"):
+    """
+    Funding rate extremes na 1H.
+    Ekstremalnie niski funding -> long (rynek oversold w perpetuals).
+    Ekstremalnie wysoki funding -> short (rynek overbought).
+    extreme_pct: procent ekstremalnych wartości (5 = top/bottom 5%)
+    """
+    import pandas as pd
+    import numpy as np
+
+    if funding is None or len(funding) == 0:
+        return []
+
+    f = funding.reindex(df.index, method="nearest", tolerance=pd.Timedelta('4h'))
+    if f.isna().all():
+        return []
+
+    lo = f.quantile(extreme_pct / 100)
+    hi = f.quantile(1 - extreme_pct / 100)
+
+    signals = []
+    for i in range(1, len(df) - 1):
+        fval = f.iloc[i]
+        if pd.isna(fval):
+            continue
+        if fval <= lo:
+            signals.append((i + 1, 1))   # long
+        elif fval >= hi:
+            signals.append((i + 1, -1))  # short
+    return signals

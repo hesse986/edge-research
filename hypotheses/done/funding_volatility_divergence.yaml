@@ -1,0 +1,13 @@
+combination_of: []
+direction: short
+edge: funding_momentum_divergence
+mechanism: When funding rates remain elevated while volatility compresses, it signals
+  exhaustion of directional pressure. The market is overpaying for direction while
+  price action suggests consolidation
+name: funding_volatility_divergence
+notes: Look for high positive funding with decreasing ATR/realized vol for short setups
+prereg_date: '2026-05-26'
+priority: medium
+source: https://quantpedia.com/what-drives-volatility-of-bitcoin/
+timeframes:
+- 4h

@@ -1,0 +1,14 @@
+combination_of: []
+direction: both
+edge: funding_exhaustion_v2
+mechanism: Gdy funding rate osiąga maksymalne limity (np. ±0.75%), ceny perpetual
+  futures mogą odchylać się od cen spot bez pełnej korekty. Można wykorzystać te momenty
+  do wejścia w pozycje arbitrażowe z lepszym risk/reward
+name: funding_rate_clamping_arbitrage
+notes: Badania wskazują na istnienie no-arbitrage bounds związanych z clamping function
+  w mechanizmie funding swap
+prereg_date: '2026-05-26'
+priority: high
+source: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5262988
+timeframes:
+- 4h

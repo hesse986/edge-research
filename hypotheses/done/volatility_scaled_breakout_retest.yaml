@@ -1,0 +1,13 @@
+combination_of: []
+direction: both
+edge: breakout_retest_v2
+mechanism: Time series momentum strategies show superior performance when positions
+  are volatility-scaled. Apply this to breakout retest patterns - take larger positions
+  in low vol environments where false breakouts are more common
+name: volatility_scaled_breakout_retest
+notes: 'Use inverse volatility scaling: position size = target_vol / realized_vol'
+prereg_date: '2026-05-26'
+priority: low
+source: https://quantpedia.com/deconstructing-the-time-series-momentum-strategy/
+timeframes:
+- 4h

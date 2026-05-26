@@ -1,0 +1,15 @@
+combination_of:
+- volume_climax_reversal
+direction: both
+edge: compression_breakout_v2
+mechanism: Perpetual futures redukują basis risk podczas kryzysów, co prowadzi do
+  mniejszych strat arbitrażystów. W momentach stresu rynkowego spread bid-ask się
+  rozszerza, ale basis może się kompresować ze względu na funding payments
+name: crisis_liquidity_basis_compression
+notes: Kombinacja z volume climax może identyfikować punkty kapitulacji gdzie basis
+  się normalizuje
+prereg_date: '2026-05-26'
+priority: high
+source: https://www.aeaweb.org/conference/2026/program/paper/ByyFEfr4
+timeframes:
+- 4h

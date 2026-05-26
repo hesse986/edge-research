@@ -1,0 +1,16 @@
+combination_of:
+- compression_breakout_v2
+- vwap_range_reversion
+direction: both
+edge: compression_breakout_v2
+mechanism: Low volatility periods tend to cluster and often precede sharp moves. When
+  volatility compresses below historical thresholds for extended periods, mean reversion
+  trades have higher success rates as markets tend to overextend in quiet conditions
+name: volatility_compression_mean_reversion
+notes: Combine volatility compression detection with VWAP range reversion for higher
+  probability setups
+prereg_date: '2026-05-26'
+priority: high
+source: https://quantpedia.com/an-analysis-of-volatility-clustering-of-equity-factor-strategies/
+timeframes:
+- 4h

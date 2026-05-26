@@ -1,0 +1,14 @@
+combination_of: []
+direction: both
+edge: volume_climax_reversal
+mechanism: Bitcoin and Ether show systematic volatility bursts at the first minute
+  of the hour and every 15 minutes. These predictable bursts create mean reversion
+  opportunities as algorithmic trading and funding settlements create temporary dislocations
+name: hourly_volatility_burst_fade
+notes: Focus on fading moves that occur during the first 5 minutes of each hour, especially
+  at :00, :15, :30, :45
+prereg_date: '2026-05-26'
+priority: high
+source: https://quantpedia.com/periodicity-in-cryptocurrencies-recurrent-patterns-in-volatility-and-volume/
+timeframes:
+- 4h

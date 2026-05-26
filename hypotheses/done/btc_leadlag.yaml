@@ -1,0 +1,5 @@
+name: btc_leadlag_reversal
+edge: btc_leadlag_reversal
+timeframes: ["4h"]
+direction: both
+cost: 0.0002

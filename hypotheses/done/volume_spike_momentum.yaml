@@ -1,0 +1,5 @@
+name: volume_spike_momentum
+edge: volume_spike_momentum
+timeframes: ["4h"]
+direction: both
+cost: 0.0002

@@ -31,6 +31,9 @@ VALIDATION_START = "2022-01-01"
 VALIDATION_END   = "2025-01-01"
 
 EDGE_MAP = {
+    "funding_extreme_1h":             pe.funding_extreme_1h,
+    "btc_leadlag_reversal":           pe.btc_leadlag_reversal,
+    "volume_spike_momentum":         pe.volume_spike_momentum,
     "day_of_week_effect":            pe.day_of_week_effect,
     "peer_reversal":                  pe.peer_reversal,
     "hash_ribbon":                    pe.hash_ribbon,
@@ -98,22 +101,24 @@ def get_df(asset, tf):
     df1h = datamod.load_binance_ohlcv(asset, "1h",
                                        VALIDATION_START, VALIDATION_END,
                                        use_cache=True)
-    tf_map = {"1h": "1h", "4h": "4h", "1d": "1D", "5m": "5min", "15m": "15min"}
+    tf_map = {"1h": "1h", "4h": "4h", "8h": "8h", "1d": "1D", "5m": "5min", "15m": "15min"}
     key = tf_map.get(tf, tf)
     if key == "1h":
         return df1h
     return datamod.resample_ohlcv(df1h, key)
 
-def get_signals(df, edge_name, direction, funding=None, feargreed=None, bybit_df=None, hashrate=None, peers_df=None):
+def get_signals(df, edge_name, direction, funding=None, feargreed=None, bybit_df=None, hashrate=None, peers_df=None, btc_df=None):
     fn = EDGE_MAP.get(edge_name)
     if fn is None:
         raise ValueError(f"Nieznany edge: {edge_name}")
-    if funding is not None and edge_name in ("funding_exhaustion_v2", "funding_extremes_v1", "funding_momentum_divergence", "ltc_failed_breakout_funding"):
+    if funding is not None and edge_name in ("funding_exhaustion_v2", "funding_extremes_v1", "funding_momentum_divergence", "ltc_failed_breakout_funding", "funding_extreme_1h", "funding_confluence"):
         raw = fn(df, funding)
     elif hashrate is not None and edge_name == 'hash_ribbon':
         raw = fn(df, hashrate=hashrate)
     elif peers_df is not None and edge_name == 'peer_reversal':
         raw = fn(df, peers_df=peers_df)
+    elif btc_df is not None and edge_name == 'btc_leadlag_reversal':
+        raw = fn(df, btc_df=btc_df)
     else:
         raw = fn(df)
     if direction == "both":
@@ -223,7 +228,7 @@ def test_asset(asset, hypo, tf, cost, min_trades, max_hold, direction="both"):
         funding = None
         feargreed = None
         bybit_df  = None
-        funding_edges2 = ("funding_exhaustion_v2","funding_extremes_v1",
+        funding_edges2 = ("funding_exhaustion_v2","funding_extremes_v1","funding_extreme_1h",
                           "funding_momentum_divergence","ltc_failed_breakout_funding",
                           "funding_confluence")
         if hypo["edge"] in funding_edges2:
@@ -233,8 +238,12 @@ def test_asset(asset, hypo, tf, cost, min_trades, max_hold, direction="both"):
             bybit_df = datamod.load_bybit_ohlcv(asset, tf, VALIDATION_START, VALIDATION_END, use_cache=True)
         hashrate = None
         peers_df = None
+        btc_df   = None
         if hypo["edge"] == "hash_ribbon":
             hashrate = datamod.load_hashrate(VALIDATION_START, VALIDATION_END, use_cache=True)
+        if hypo["edge"] == "btc_leadlag_reversal" and asset != "BTC/USDT":
+            df1h_btc = datamod.load_binance_ohlcv("BTC/USDT", "1h", VALIDATION_START, VALIDATION_END, use_cache=True)
+            btc_df   = datamod.resample_ohlcv(df1h_btc, hypo["timeframes"][0])
         if hypo["edge"] == "peer_reversal":
             peer_symbols = ["LTC/USDT", "XRP/USDT", "ADA/USDT"]
             peers_df = {}
@@ -242,7 +251,7 @@ def test_asset(asset, hypo, tf, cost, min_trades, max_hold, direction="both"):
                 if ps != asset:
                     df1h_peer = datamod.load_binance_ohlcv(ps, "1h", VALIDATION_START, VALIDATION_END, use_cache=True)
                     peers_df[ps] = datamod.resample_ohlcv(df1h_peer, hypo["timeframes"][0])
-        indices, dirs = get_signals(df, hypo["edge"], hypo["direction"], funding, feargreed, bybit_df, hashrate, peers_df)
+        indices, dirs = get_signals(df, hypo["edge"], hypo["direction"], funding, feargreed, bybit_df, hashrate, peers_df, btc_df)
 
         if len(indices) < min_trades:
             return {"group": group, "asset": asset,

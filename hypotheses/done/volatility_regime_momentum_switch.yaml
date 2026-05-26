@@ -1,0 +1,16 @@
+combination_of:
+- momentum_regime_v2
+- keltner_range_reversion
+direction: both
+edge: momentum_regime_v2
+mechanism: High volatility regimes show stronger spillover effects and trend persistence,
+  while low volatility regimes favor mean reversion. Use GARCH-type volatility estimates
+  to dynamically switch strategies
+name: volatility_regime_momentum_switch
+notes: Use realized volatility ratio to determine regime - high vol = momentum, low
+  vol = mean reversion
+prereg_date: '2026-05-26'
+priority: medium
+source: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7786164/
+timeframes:
+- 4h
