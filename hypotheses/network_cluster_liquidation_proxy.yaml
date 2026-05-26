@@ -1,0 +1,14 @@
+combination_of:
+- liquidation_proxy
+- funding_exhaustion_v2
+direction: short
+edge: liquidation_proxy
+mechanism: Specific transaction patterns (chainlets) precede liquidation events; can
+  be used as early warning system
+name: network_cluster_liquidation_proxy
+notes: Monitor unusual transaction clustering patterns as liquidation precursor
+prereg_date: '2026-05-26'
+priority: medium
+source: https://arxiv.org/pdf/2001.03099
+timeframes:
+- 4h

@@ -1,0 +1,14 @@
+combination_of:
+- funding_momentum_divergence
+- panic_no_followthrough
+direction: both
+edge: funding_momentum_divergence
+mechanism: When social sentiment reaches extremes but funding doesn't follow, it signals
+  potential reversal as leveraged traders are positioned wrong
+name: social_sentiment_funding_divergence
+notes: Use fear/greed index or Twitter sentiment combined with funding rate analysis
+prereg_date: '2026-05-26'
+priority: high
+source: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12058735/
+timeframes:
+- 4h

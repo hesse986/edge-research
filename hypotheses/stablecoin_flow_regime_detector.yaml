@@ -1,0 +1,12 @@
+combination_of: []
+direction: both
+edge: momentum_regime_v2
+mechanism: Large stablecoin inflows to exchanges signal buying pressure, outflows
+  signal risk-off; can be combined with momentum regime detection
+name: stablecoin_flow_regime_detector
+notes: Track USDC flows as additional confirmation for regime shifts
+prereg_date: '2026-05-26'
+priority: medium
+source: https://arxiv.org/html/2506.21246
+timeframes:
+- 4h

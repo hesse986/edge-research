@@ -1,0 +1,12 @@
+combination_of: []
+direction: long
+edge: compression_breakout_v2
+mechanism: When price breaks above trader's realized price ($116k) or other realized
+  price levels, it signals shift to bull phase as multiple cohorts enter profit
+name: realized_price_momentum_breakout
+notes: Use realized price levels as dynamic resistance/support for breakout detection
+prereg_date: '2026-05-26'
+priority: high
+source: https://www.coindesk.com/markets/2025/10/03/bitcoin-to-usd200k-by-end-of-2025-this-cycle-indicator-points-to-explosive-months-ahead
+timeframes:
+- 4h

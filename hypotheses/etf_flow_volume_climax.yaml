@@ -1,0 +1,12 @@
+combination_of: []
+direction: both
+edge: volume_climax_reversal
+mechanism: ETF flows creating extreme volume spikes (213k BTC in Q4 2024) can mark
+  local tops/bottoms when exhausted
+name: etf_flow_volume_climax
+notes: Track ETF flow data relative to historical averages for climax detection
+prereg_date: '2026-05-26'
+priority: high
+source: https://www.coindesk.com/markets/2025/10/03/bitcoin-to-usd200k-by-end-of-2025-this-cycle-indicator-points-to-explosive-months-ahead
+timeframes:
+- 4h

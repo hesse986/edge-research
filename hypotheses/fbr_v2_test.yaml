@@ -1,0 +1,5 @@
+name: failed_breakout_range_v2
+edge: failed_breakout_range_v2
+timeframes: ["4h"]
+direction: both
+cost: 0.0002
