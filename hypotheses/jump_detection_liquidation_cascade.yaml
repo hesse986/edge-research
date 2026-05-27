@@ -1,0 +1,13 @@
+combination_of: []
+direction: long
+edge: liquidation_proxy
+mechanism: Large jumps in crypto often result from liquidity evaporation and cascading
+  liquidations - strategy identifies these events and trades the recovery
+name: jump_detection_liquidation_cascade
+notes: Paper mentions frequent large jumps from liquidity evaporation and security
+  incidents
+prereg_date: '2026-05-26'
+priority: high
+source: https://quantpedia.com/cryptocurrency-as-an-investable-asset-class-10-lessons/
+timeframes:
+- 4h

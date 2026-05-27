@@ -1,0 +1,16 @@
+combination_of:
+- funding_momentum_divergence
+- compression_breakout_v2
+direction: both
+edge: compression_breakout_v2
+mechanism: Gdy funding rate zbliża się do limitu clamping (±0.75%), ograniczenia arbitrażu
+  powodują większe odchylenia spot-perpetual. Po przekroczeniu progu następuje gwałtowna
+  korekta gdy kapitał arbitrażowy wchodzi
+name: clamped_funding_momentum_breakout
+notes: Paper Dai et al. pokazuje że clamping function tworzy model-free no-arbitrage
+  bounds
+prereg_date: '2026-05-27'
+priority: high
+source: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5262988
+timeframes:
+- 4h

@@ -1,0 +1,15 @@
+combination_of:
+- momentum_regime_v2
+- volume_climax_reversal
+direction: long
+edge: combination
+mechanism: Smaller-cap tokens show persistent momentum excess returns - combining
+  with volume spikes identifies genuine moves vs manipulation
+name: small_cap_momentum_volume_filter
+notes: Classic factor signals translate to crypto - smaller caps and momentum generate
+  excess returns
+prereg_date: '2026-05-26'
+priority: medium
+source: https://quantpedia.com/cryptocurrency-as-an-investable-asset-class-10-lessons/
+timeframes:
+- 4h

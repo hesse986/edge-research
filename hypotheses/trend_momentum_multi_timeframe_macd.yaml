@@ -1,0 +1,12 @@
+combination_of: []
+direction: both
+edge: momentum_regime_v2
+mechanism: Uses MACD divergence on multiple timeframes to capture strong trends while
+  filtering out noise - daily for direction, hourly for entry timing
+name: trend_momentum_multi_timeframe_macd
+notes: Article shows D1H1 MACD strategy with stop loss improved performance
+prereg_date: '2026-05-26'
+priority: high
+source: https://quantpedia.com/how-to-design-a-simple-multi-timeframe-trend-strategy-on-bitcoin/
+timeframes:
+- 4h

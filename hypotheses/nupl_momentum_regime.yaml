@@ -1,0 +1,14 @@
+combination_of: []
+direction: both
+edge: momentum_regime_v2
+mechanism: NUPL provides clear market regime identification. In euphoria zone, only
+  take momentum shorts. In capitulation zone, only momentum longs. Optimism/belief
+  zones = trend following
+name: nupl_momentum_regime
+notes: 'NUPL currently ~0.5 (optimism zone). Use as regime filter: >0.75 only shorts,
+  <0 only longs, 0.25-0.75 both directions'
+prereg_date: '2026-05-27'
+priority: high
+source: https://zipmex.com/blog/how-to-use-on-chain-analytics/
+timeframes:
+- 4h

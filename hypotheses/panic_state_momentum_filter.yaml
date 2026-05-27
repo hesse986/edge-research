@@ -1,0 +1,15 @@
+combination_of:
+- momentum_regime_v2
+- panic_no_followthrough
+direction: long
+edge: combination
+mechanism: Momentum crashes są częściowo przewidywalne - występują w stanach paniki,
+  po spadkach rynku i przy wysokiej zmienności. Panic_no_followthrough może identyfikować
+  te stany. Wyłączanie momentum w tych okresach może podwoić Sharpe ratio.
+name: panic_state_momentum_filter
+notes: Momentum tylko gdy panic_no_followthrough nie sygnalizuje stanu paniki
+prereg_date: '2026-05-26'
+priority: high
+source: https://www.researchgate.net/publication/393284396_Cryptocurrency_Market_Risk-Managed_Momentum_Strategies
+timeframes:
+- 4h

@@ -1,0 +1,15 @@
+combination_of:
+- momentum_regime_v2
+- panic_no_followthrough
+direction: both
+edge: combination
+mechanism: Most altcoins have residual BTC beta - strategy goes long momentum alts
+  but hedges with BTC shorts when detecting market stress signals
+name: hedged_momentum_btc_beta
+notes: Article shows hedging with BTC derivatives can reduce drawdowns from -80% to
+  -22% to -37%
+prereg_date: '2026-05-26'
+priority: high
+source: https://quantpedia.com/systematic-hedging-of-the-cryptocurrency-portfolio/
+timeframes:
+- 4h

@@ -1,0 +1,13 @@
+combination_of: []
+direction: both
+edge: funding_exhaustion_v2
+mechanism: When STH-MVRV reaches extremes (>1.5 or <0.85) AND funding shows exhaustion
+  patterns, it signals overextended new money positioning ready for reversal
+name: mvrv_funding_exhaustion
+notes: STH-MVRV >1.5 = overbought with high funding = short. STH-MVRV <0.85 = oversold
+  with negative funding = long
+prereg_date: '2026-05-27'
+priority: high
+source: https://studio.glassnode.com/charts/btc-sth-realized-price-mvrv?a=BTC
+timeframes:
+- 4h

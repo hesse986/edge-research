@@ -1,0 +1,15 @@
+combination_of:
+- liquidation_proxy
+- volume_climax_reversal
+direction: short
+edge: liquidation_proxy
+mechanism: Przy leverage >5x w funding arbitrage, nagłe ruchy spot mogą wywołać likwidacje.
+  Liquidation proxy + volume climax sygnalizują nadchodzące cascade events
+name: leveraged_funding_liquidation_cascade
+notes: Paper pokazuje że leverage w funding arbitrage znacząco zwiększa ryzyko likwidacji
+  z penalty fees
+prereg_date: '2026-05-27'
+priority: high
+source: https://www.sciencedirect.com/science/article/pii/S2096720925000818
+timeframes:
+- 4h

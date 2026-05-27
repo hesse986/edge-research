@@ -1,0 +1,13 @@
+combination_of: []
+direction: both
+edge: donchian_acceptance
+mechanism: MVRV Z-Score >7 = extreme overvaluation, <0 = extreme undervaluation. At
+  extremes, Donchian breakouts fail. In neutral zone (0-3), breakouts succeed
+name: mvrv_zscore_donchian_acceptance
+notes: Current MVRV Z-Score ~3.0 suggests room for growth. Trade Donchian breakouts
+  long, fade breakouts if Z-Score >7
+prereg_date: '2026-05-27'
+priority: medium
+source: https://www.bitcoinmagazinepro.com/charts/mvrv-zscore/
+timeframes:
+- 4h
