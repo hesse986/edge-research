@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Edge Research Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:#0a0e1a; color:#e2e8f0; font-family:'SF Mono',monospace; font-size:13px; }
@@ -256,6 +257,89 @@ function renderProcesses(data) {
   }).join('');
 }
 
+
+let spreadChart = null;
+let currentPair = 'ada_link';
+
+async function loadSpreadChart(pair) {
+  currentPair = pair || currentPair;
+  try {
+    const data = await fetch(`/api/spread_chart/${currentPair}`).then(r=>r.json());
+    if (data.error) return;
+
+    const labels = data.timestamps.map(t => {
+      const d = new Date(t);
+      return d.toLocaleDateString('pl', {month:'2-digit', day:'2-digit'}) + ' ' +
+             d.toLocaleTimeString('pl', {hour:'2-digit', minute:'2-digit'});
+    });
+
+    const ctx = document.getElementById('spread-chart').getContext('2d');
+    if (spreadChart) spreadChart.destroy();
+
+    // Linie poziome dla pozycji
+    const annotations = {};
+    data.open_positions.forEach((pos, i) => {
+      if (pos.entry) annotations[`entry${i}`] = {
+        type:'line', yMin:pos.entry, yMax:pos.entry,
+        borderColor:'#4e9af1', borderWidth:1.5, borderDash:[4,4],
+        label:{content:'Entry', display:true, color:'#4e9af1', font:{size:10}}
+      };
+      if (pos.sl) annotations[`sl${i}`] = {
+        type:'line', yMin:pos.sl, yMax:pos.sl,
+        borderColor:'#ff4757', borderWidth:1.5, borderDash:[4,4],
+        label:{content:'SL', display:true, color:'#ff4757', font:{size:10}}
+      };
+      if (pos.tp) annotations[`tp${i}`] = {
+        type:'line', yMin:pos.tp, yMax:pos.tp,
+        borderColor:'#00d09c', borderWidth:1.5, borderDash:[4,4],
+        label:{content:'TP', display:true, color:'#00d09c', font:{size:10}}
+      };
+    });
+
+    spreadChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Spread',
+          data: data.spread,
+          borderColor: '#4e9af1',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          fill: false,
+          tension: 0.2
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {display:false},
+          annotation: {annotations}
+        },
+        scales: {
+          x: {display:false},
+          y: {
+            grid: {color:'#1e2538'},
+            ticks: {color:'#64748b', font:{size:10}}
+          }
+        }
+      }
+    });
+
+    // Pokaż poziomy
+    const levels = document.getElementById('spread-levels');
+    levels.innerHTML = data.open_positions.map(pos => `
+      <span style="color:#4e9af1;">Entry: ${pos.entry.toFixed(6)}</span>
+      <span style="color:#ff4757;">SL: ${pos.sl.toFixed(6)}</span>
+      <span style="color:#00d09c;">TP: ${pos.tp.toFixed(6)}</span>
+      <span style="color:#64748b;">${pos.direction}</span>
+    `).join('<span style="color:#1e2538;">|</span>') || '<span class="gray">Brak otwartych pozycji</span>';
+
+  } catch(e) {
+    console.error('Spread chart error:', e);
+  }
+}
+
 async function loadAll() {
   try {
     const [stats, eq, pos, zs, procs] = await Promise.all([
@@ -271,6 +355,7 @@ async function loadAll() {
     renderPositions(pos);
     renderZscore(zs);
     renderProcesses(procs);
+    loadSpreadChart(currentPair);
   } catch(e) {
     document.getElementById('updated').textContent = 'Błąd połączenia z serwerem';
   }
@@ -279,6 +364,23 @@ async function loadAll() {
 loadAll();
 setInterval(loadAll, 30000); // auto-refresh co 30 sekund
 </script>
+
+
+<!-- Spread chart -->
+<div style="padding:0 24px 16px;">
+  <div class="card">
+    <div class="card-title" style="display:flex;justify-content:space-between;">
+      <span>Spread Chart – Ada/Link (4H live)</span>
+      <div style="display:flex;gap:8px;">
+        <button class="refresh-btn" onclick="loadSpreadChart('ada_link')">ADA/LINK</button>
+        <button class="refresh-btn" onclick="loadSpreadChart('ltc_ada')">LTC/ADA</button>
+        <button class="refresh-btn" onclick="loadSpreadChart('bnb_sol')">BNB/SOL</button>
+      </div>
+    </div>
+    <canvas id="spread-chart" style="max-height:180px;"></canvas>
+    <div id="spread-levels" style="display:flex;gap:16px;margin-top:8px;font-size:11px;"></div>
+  </div>
+</div>
 
 <!-- Processes panel -->
 <div style="padding:0 24px 24px;">

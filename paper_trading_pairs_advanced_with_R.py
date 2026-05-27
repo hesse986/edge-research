@@ -204,16 +204,41 @@ def main():
                         exit_reason = "EXIT_Z"
                 if exit_reason:
                     direction_str = f"LONG_{a1.split('/')[0]}_SHORT_{a2.split('/')[0]}" if pos == 1 else f"SHORT_{a1.split('/')[0]}_LONG_{a2.split('/')[0]}"
-                    # Oblicz R
+                    # Oblicz faktyczne R z kosztami
                     risk = abs(ed["entry_spread"] - ed["sl"])
                     if risk <= 0:
                         risk = 0.02 * abs(ed["entry_spread"])
-                    ret = (spread - ed["entry_spread"]) * (1 if pos == 1 else -1)
-                    r = ret / risk
-                    with BASE_LOG.open("a", newline="") as f:
-                        writer = csv.writer(f)
-                        writer.writerow([now, name, direction_str, f"{z:.3f}", f"{spread:.6f}",
-                                         "", "", "", "CLOSED", f"{spread:.6f}", f"{r:.4f}", exit_reason])
+                    ret  = (spread - ed["entry_spread"]) * (1 if pos == 1 else -1)
+                    cost = 0.0002 * abs(ed["entry_spread"]) / risk  # koszty transakcyjne w R
+                    r    = ret / risk - cost
+                    # Aktualizuj oryginalny wpis OPEN na CLOSED
+                    _rows = []
+                    _updated = False
+                    if BASE_LOG.exists():
+                        with open(BASE_LOG, newline="") as _rf:
+                            _reader = csv.DictReader(_rf)
+                            _fields = _reader.fieldnames
+                            for _row in _reader:
+                                if (_row["pair"] == name and
+                                    _row["status"] == "OPEN" and
+                                    not _updated):
+                                    _row["status"]     = "CLOSED"
+                                    _row["exit_price"] = f"{spread:.6f}"
+                                    _row["result_R"]   = f"{r:.4f}"
+                                    _row["notes"]      = exit_reason
+                                    _updated = True
+                                _rows.append(_row)
+                    if _updated and _rows:
+                        with open(BASE_LOG, "w", newline="") as _wf:
+                            _writer = csv.DictWriter(_wf, fieldnames=_fields)
+                            _writer.writeheader()
+                            _writer.writerows(_rows)
+                    else:
+                        with BASE_LOG.open("a", newline="") as f:
+                            writer = csv.writer(f)
+                            writer.writerow([now, name, direction_str, f"{z:.3f}",
+                                             f"{spread:.6f}", "", "", "", "CLOSED",
+                                             f"{spread:.6f}", f"{r:.4f}", exit_reason])
                     print(f"  *** ZAMKNIĘCIE: {direction_str} przyczyna={exit_reason}, R={r:.2f}")
                     # Aktualizuj circuit breaker
                     if r < -0.5:

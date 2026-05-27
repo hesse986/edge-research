@@ -178,6 +178,65 @@ def processes():
     
     return result
 
+
+@app.get("/api/spread_chart/{pair_name}")
+def spread_chart(pair_name: str):
+    """Zwraca historię spreadu dla pary z liniami entry/TP/SL."""
+    import requests as _req
+    import numpy as _np
+
+    pair_config = {
+        "ltc_ada":  ("LTC/USDT", "ADA/USDT",  19.02),
+        "ada_link": ("ADA/USDT", "LINK/USDT",  0.0199),
+        "bnb_sol":  ("BNB/USDT", "SOL/USDT",   0.0393),
+    }
+
+    if pair_name not in pair_config:
+        return {"error": "Unknown pair"}
+
+    sym1, sym2, hedge = pair_config[pair_name]
+    url = "https://api.binance.com/api/v3/klines"
+
+    try:
+        r1 = _req.get(url, params={"symbol": sym1.replace("/",""), "interval": "4h", "limit": 60}, timeout=5)
+        r2 = _req.get(url, params={"symbol": sym2.replace("/",""), "interval": "4h", "limit": 60}, timeout=5)
+        candles1 = r1.json()
+        candles2 = r2.json()
+
+        timestamps = [int(c[0]) for c in candles1]
+        p1 = [float(c[4]) for c in candles1]
+        p2 = [float(c[4]) for c in candles2]
+        spread = [p1[i] - hedge * p2[i] for i in range(len(p1))]
+
+        lookback = 30
+        mean = _np.mean(spread[-lookback:])
+        std  = _np.std(spread[-lookback:])
+        zscore = [(s - mean) / std if std > 0 else 0 for s in spread]
+
+        # Pobierz otwarte pozycje dla tej pary
+        open_positions = []
+        pt = load_csv("paper_trades_pairs_advanced_R.csv")
+        for row in pt:
+            if row.get("pair") == pair_name and row.get("status") == "OPEN":
+                open_positions.append({
+                    "entry":     float(row.get("entry_price", 0) or 0),
+                    "sl":        float(row.get("sl", 0) or 0),
+                    "tp":        float(row.get("tp", 0) or 0),
+                    "direction": row.get("direction", ""),
+                    "timestamp": row.get("timestamp", ""),
+                })
+
+        return {
+            "timestamps": timestamps,
+            "spread":     spread,
+            "zscore":     zscore,
+            "mean":       float(mean),
+            "std":        float(std),
+            "open_positions": open_positions,
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000, reload=False)
