@@ -54,7 +54,7 @@ EXIT_Z = 0.5
 SL_MULT = 1.5
 RR = 2.0
 COST = 0.0002
-CHECK_EVERY = 60 * 60 * 4
+CHECK_EVERY = 3 * 60
 BASE_LOG = Path("paper_trades_pairs_advanced_R.csv")
 
 PAIRS = [
@@ -123,14 +123,19 @@ def main():
                 _name = _row.get("pair","")
                 if _row.get("status") == "OPEN" and _name in positions:
                     positions[_name] = 1 if "LONG" in _row.get("direction","") else -1
+                    # Przelicz SL/TP na podstawie aktualnego spreadu
+                    _entry = float(_row.get("entry_price", 0) or _row.get("spread", 0))
+                    _sl    = float(_row.get("sl", 0))
+                    _tp    = float(_row.get("tp", 0))
                     entry_data[_name] = {
                         "entry_time":   _row.get("timestamp",""),
                         "entry_z":      float(_row.get("z_score", 0)),
-                        "entry_spread": float(_row.get("spread", 0)),
-                        "sl":           float(_row.get("sl", 0)),
-                        "tp":           float(_row.get("tp", 0)),
+                        "entry_spread": _entry,
+                        "sl":           _sl,
+                        "tp":           _tp,
+                        "sizing":       {},
                     }
-                    print(f"  Wczytano otwartą pozycję: {_name} {_row.get('direction','')} z {_row.get('timestamp','')}")
+                    print(f"  Wczytano pozycję: {_name} entry={_entry:.6f} sl={_sl:.6f} tp={_tp:.6f}")
 
     while True:  # RUN_ONCE sprawdzane na końcu
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
