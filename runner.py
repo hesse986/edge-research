@@ -14,6 +14,7 @@ import edges as edgemod
 import premium_edges as pe
 try:
     from trading_system.research.pairs_validation import pairs_pctMR as _pairs_pctMR
+    from trading_system.research.hedge import compute_spread as _compute_spread, beta_window_for as _beta_window_for
     HAS_PAIRS_VALIDATION = True
 except:
     HAS_PAIRS_VALIDATION = False
@@ -282,12 +283,12 @@ def test_asset(asset, hypo, tf, cost, min_trades, max_hold, direction="both"):
             # Dla pairs trading: permutation test na spreadzie
             # Pobierz spread z pierwszej pary w peers_df
             try:
-                from sklearn.linear_model import LinearRegression
                 peer_sym = list(peers_df.keys())[0]
                 p1 = df["close"]
-                p2 = peers_df[peer_sym]["close"].reindex(df.index, method="nearest")
-                model = LinearRegression().fit(p2.values.reshape(-1,1), p1.values)
-                spread = p1 - model.coef_[0] * p2
+                # ffill (nie "nearest") — wyrównanie peera tylko z przeszłości, bez lookaheadu.
+                p2 = peers_df[peer_sym]["close"].reindex(df.index, method="ffill")
+                # Beta out-of-sample (rolling OLS), okno = 4× domyślny lookback z-score (30).
+                spread = _compute_spread(p1, p2, _beta_window_for(30))
                 pt = _pairs_pctMR(spread, n_permutations=200)
                 pct_mr = pt["pctMR"]
                 pct_ts = pct_mr  # używamy tego samego dla obu
