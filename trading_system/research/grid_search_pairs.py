@@ -12,6 +12,9 @@ from itertools import product
 from pathlib import Path
 import data as datamod
 from hedge import compute_spread, beta_window_for
+from trading_system.agents.validation_agent import (
+    deflated_sharpe_ratio, probability_of_backtest_overfitting,
+)
 import csv
 from datetime import datetime
 
@@ -51,6 +54,9 @@ def run_backtest(spread, entry_z, exit_z, lookback, sl_mult, cost=COST, rr=RR):
     atr    = (spread.rolling(14).max() - spread.rolling(14).min()) / 14
 
     pos = 0; entry_z_val = 0; entry_spread = 0; trades = []
+    # Per-świecowy szereg R: R zapisany na świecy WYJŚCIA, 0 poza nią.
+    # Wyrównany do indeksu spreadu — zasila CSCV/PBO i DSR z jednego przebiegu.
+    bar_r = pd.Series(0.0, index=spread.index)
     for i in range(lookback + 5, len(spread)):
         z = zscore.iloc[i]
         if pd.isna(z): continue
@@ -66,8 +72,8 @@ def run_backtest(spread, entry_z, exit_z, lookback, sl_mult, cost=COST, rr=RR):
             exit_cond = (pos == 1 and z > -exit_z) or (pos == -1 and z < exit_z)
             if exit_cond:
                 r = ret / risk - cost if risk > 0 else 0
-                trades.append(r); pos = 0
-    return trades
+                trades.append(r); bar_r.iloc[i] = r; pos = 0
+    return trades, bar_r
 
 def compute_metrics(trades):
     if len(trades) < MIN_TRADES:
@@ -90,6 +96,49 @@ def get_full_prices(df1, df2):
     return df1.loc[common, "close"], df2.loc[common, "close"]
 
 # ============================================================
+# OCENA OVERFITTINGU (DSR + PBO) — per para
+# ============================================================
+PBO_PARTITIONS = 10
+MIN_TRADES_PER_SUBPERIOD = 10   # przy S=10 => ~100 transakcji/config na wiarygodne CSCV
+
+def assess_pair_overfitting(pair, bar_series_list, trade_counts, best_trades, n_configs):
+    """Deflated Sharpe + PBO dla JEDNEJ pary (audyt 3.3, P0-4).
+
+    Zabezpieczenia:
+    - PBO liczony OSOBNO per para (nie mieszamy instrumentów w jednej macierzy),
+    - DSR w tym samym przebiegu, n_trials = liczba konfiguracji w gridzie,
+    - bramka uczciwości: jeśli danych za mało na wiarygodne CSCV, zwracamy
+      komunikat zamiast liczby PBO, której nie da się obronić.
+    """
+    # --- DSR na najlepszej (val) konfiguracji, n_trials = liczba config ---
+    if len(best_trades) >= 10:
+        dsr = deflated_sharpe_ratio(np.asarray(best_trades, dtype=float), n_trials=n_configs)
+    else:
+        dsr = {"pvalue": None, "is_significant": False,
+               "message": f"DSR nierzetelny — za mało transakcji ({len(best_trades)})"}
+
+    # --- PBO na macierzy per-bar R (T×N), z bramką uczciwości ---
+    S = PBO_PARTITIONS
+    min_total = S * MIN_TRADES_PER_SUBPERIOD
+    med_trades = float(np.median(trade_counts)) if trade_counts else 0.0
+
+    if len(bar_series_list) < 2:
+        pbo = {"pbo": None, "reliable": False,
+               "message": "PBO nierzetelny — <2 konfiguracje z ważnymi metrykami val"}
+    else:
+        matrix = pd.concat(bar_series_list, axis=1).fillna(0.0).to_numpy()
+        T = matrix.shape[0]
+        if T < S * 2 or med_trades < min_total:
+            pbo = {"pbo": None, "reliable": False,
+                   "message": (f"PBO nierzetelny — za mało danych (mediana "
+                               f"{med_trades:.0f} transakcji/config < {min_total}, T={T})")}
+        else:
+            pbo = probability_of_backtest_overfitting(matrix, n_partitions=S)
+            pbo["reliable"] = True
+
+    return {"pair": pair, "n_configs": n_configs, "dsr": dsr, "pbo": pbo}
+
+# ============================================================
 # GŁÓWNA PĘTLA GRID SEARCH
 # ============================================================
 def main():
@@ -108,6 +157,7 @@ def main():
     print(f"\nGrid search: {len(combos)} kombinacji × {len(PAIRS)} par = {total} testów\n")
 
     results = []
+    overfit_reports = []
     done = 0
     for sym1, sym2 in PAIRS:
         # Ciągłe ceny na wspólnym indeksie. Spread liczymy raz na całym szeregu
@@ -115,6 +165,11 @@ def main():
         # dzięki temu val/forward dostają warmup bety z danych przeszłych,
         # a beta nigdy nie podgląda przyszłości (audyt 3.1).
         p1_full, p2_full = get_full_prices(data[sym1], data[sym2])
+
+        # Akumulatory do oceny overfittingu (per para):
+        val_bars   = []   # per-bar R (configs z ważnymi metrykami val) → macierz PBO
+        val_counts = []   # liczba transakcji val per ta sama config
+        best       = None # (klucz_selekcji, t_val) najlepszej config → DSR
 
         for combo in combos:
             params = dict(zip(keys, combo))
@@ -127,9 +182,9 @@ def main():
             spread_val = spread_full[(idx >= VAL_START) & (idx < VAL_END)]
             spread_fwd = spread_full[idx >= FORWARD_START]
 
-            t_cal = run_backtest(spread_cal, ez, xz, lb, sl)
-            t_val = run_backtest(spread_val, ez, xz, lb, sl)
-            t_fwd = run_backtest(spread_fwd, ez, xz, lb, sl)
+            t_cal, _      = run_backtest(spread_cal, ez, xz, lb, sl)
+            t_val, br_val = run_backtest(spread_val, ez, xz, lb, sl)
+            t_fwd, _      = run_backtest(spread_fwd, ez, xz, lb, sl)
 
             m_cal = compute_metrics(t_cal)
             m_val = compute_metrics(t_val)
@@ -146,10 +201,22 @@ def main():
                     "fwd_expR":  m_fwd["exp_R"] if m_fwd else None,
                     "fwd_pctMR": m_fwd["pctMR"] if m_fwd else None,
                 })
+                # Zasilaj ocenę overfittingu TYM SAMYM przebiegiem silnika.
+                val_bars.append(br_val)
+                val_counts.append(m_val["n"])
+                key = (m_val["pctMR"], m_val["exp_R"])   # selekcja: val_pctMR, tie val_expR
+                if best is None or key > best[0]:
+                    best = (key, t_val)
 
             done += 1
             if done % 50 == 0:
                 print(f"  {done}/{total} testów...")
+
+        # Ocena overfittingu DLA TEJ PARY (n_trials = liczba konfiguracji w gridzie).
+        if best is not None:
+            overfit_reports.append(assess_pair_overfitting(
+                f"{sym1[:3]}/{sym2[:3]}", val_bars, val_counts,
+                best_trades=best[1], n_configs=len(combos)))
 
     df = pd.DataFrame(results)
     print(f"\nZakończono {len(df)} testów z wynikami.")
@@ -168,6 +235,23 @@ def main():
         fwd = f"{row['fwd_expR']:<7.4f}" if pd.notna(row['fwd_expR']) else f"{'n/a':<7}"
         print(f"{row['pair']:<10} {row['entry_z']:<8} {row['exit_z']:<7} {row['lookback']:<4} {row['sl_mult']:<4} "
               f"{row['cal_expR']:<7.4f} {row['val_pctMR']:<10.1f} {fwd}")
+
+    # ===== OCENA OVERFITTINGU (PBO + Deflated Sharpe), per para =====
+    print(f"\n=== Korekta na wielokrotne testowanie (PBO + Deflated Sharpe) ===")
+    print(f"n_trials (DSR) = liczba konfiguracji w gridzie = {len(combos)}")
+    for rep in overfit_reports:
+        d, p = rep["dsr"], rep["pbo"]
+        print(f"\n  {rep['pair']}:")
+        if d.get("pvalue") is None:
+            print(f"    DSR: {d.get('message')}")
+        else:
+            print(f"    DSR: SR(ann)={d['sr']} sr_per={d['sr_periodic']} "
+                  f"p={d['pvalue']} → {'ISTOTNY' if d['is_significant'] else 'NIEISTOTNY'} "
+                  f"(po korekcie na {rep['n_configs']} prób)")
+        if p.get("reliable"):
+            print(f"    PBO: {p['pbo']} (λ̄={p['lambda_bar']}) → {p['message']}")
+        else:
+            print(f"    PBO: {p.get('message')}")
 
     # Zapisz wyniki
     out = Path("trading_system/research/grid_search_results.csv")
