@@ -1,0 +1,14 @@
+combination_of:
+- volume_climax_reversal
+- momentum_regime_v2
+direction: both
+edge: volume_climax_reversal
+mechanism: Gdy płynność spada, anomalie momentum stają się silniejsze ale mniej trwałe.
+  Volume climax sygnalizuje wyczerpanie płynności i odwrócenie trendu
+name: liquidity_anomaly_momentum_fade
+notes: Monitoruj spadek płynności przez funding exhaustion
+prereg_date: '2026-05-29'
+priority: high
+source: https://www.researchgate.net/publication/377457967_Time-Series_and_Cross-Sectional_Momentum_in_the_Cryptocurrency_Market_A_Comprehensive_Analysis_under_Realistic_Assumptions
+timeframes:
+- 4h

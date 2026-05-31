@@ -1,0 +1,15 @@
+combination_of:
+- funding_momentum_divergence
+- volume_climax_reversal
+direction: short
+edge: volume_climax_reversal
+mechanism: Rosnący OI z rosnącym positive funding sugeruje nowe leveraged longs. Gdy
+  pojawia się volume climax przy ekstremalnym funding, możliwa kaskada likwidacji
+name: funding_oi_divergence_volume_climax
+notes: Monitoruj rozbieżność OI vs funding rate, szukaj volume climax dla potwierdzenia
+  szczytu
+prereg_date: '2026-05-28'
+priority: medium
+source: https://www.bitget.com/academy/12560603876113
+timeframes:
+- 4h

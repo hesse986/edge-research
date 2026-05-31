@@ -1,0 +1,15 @@
+combination_of:
+- vwap_range_reversion
+- panic_no_followthrough
+direction: long
+edge: vwap_range_reversion
+mechanism: Duże likwidacje tworzą trwały wpływ na cenę (permanent impact). Po kaskadzie
+  cena często odbija gdy presja likwidacyjna ustępuje.
+name: permanent_impact_vwap_fade
+notes: Po ekstremalnych likwidacjach (>$5B/24h), czekaj na stabilizację i fade ruch
+  z VWAP
+prereg_date: '2026-05-30'
+priority: low
+source: https://arxiv.org/pdf/2303.10043
+timeframes:
+- 4h

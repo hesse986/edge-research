@@ -1,0 +1,15 @@
+combination_of:
+- relative_strength_rotation
+- compression_breakout_v2
+direction: both
+edge: relative_strength_rotation
+mechanism: Różnice w funding rates między scentralizowanymi i zdecentralizowanymi
+  giełdami tworzą możliwości arbitrażowe. Konwergencja tych różnic może napędzać kierunkowe
+  ruchy
+name: funding_cex_dex_divergence
+notes: Monitorować BTC, ETH na Binance vs ApolloX/Drift - diversification benefits
+prereg_date: '2026-05-29'
+priority: medium
+source: https://www.sciencedirect.com/science/article/pii/S2096720925000818
+timeframes:
+- 4h

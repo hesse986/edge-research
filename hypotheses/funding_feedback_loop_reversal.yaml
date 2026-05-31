@@ -1,0 +1,16 @@
+combination_of:
+- funding_exhaustion_v2
+- volume_climax_reversal
+direction: both
+edge: funding_exhaustion_v2
+mechanism: Funding rate działa jako algorytmiczny feedback rule tworzący endogeniczny
+  mean-reverting basis. Przy ekstremalnych wartościach powstaje feedback loop prowadzący
+  do gwałtownych odwróceń
+name: funding_feedback_loop_reversal
+notes: Monitorować sustained extreme funding które historycznie poprzedzało najostrzejsze
+  odwrócenia
+prereg_date: '2026-05-29'
+priority: high
+source: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6185958
+timeframes:
+- 4h

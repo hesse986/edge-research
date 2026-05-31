@@ -1,0 +1,14 @@
+combination_of:
+- compression_breakout_v2
+- funding_momentum_divergence
+direction: both
+edge: combination
+mechanism: Low volatility compression + funding/price divergence wskazuje na building
+  pressure. Breakout direction zgodny z funding momentum ma wyższą success rate
+name: compression_funding_divergence
+notes: Keltner bands lepsze niż Bollinger dla crypto breakouts - bazują na ATR
+prereg_date: '2026-05-29'
+priority: medium
+source: https://ftmo.com/en/blog/three-phase-momentum-strategy-for-bitcoin/
+timeframes:
+- 4h

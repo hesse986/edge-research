@@ -1,0 +1,16 @@
+combination_of:
+- funding_exhaustion_v2
+- vwap_range_reversion
+direction: both
+edge: funding_exhaustion_v2
+mechanism: Gdy funding rate osiąga granice clamping (±0.75%), mechanizm cenowy przestaje
+  być efektywny, tworząc przewidywalne odchylenia między perpetual a spot. Arbitrażyści
+  mogą antycypować te momenty
+name: clamping_boundary_arbitrage
+notes: Paper pokazuje, że clamping function jest często pomijany ale krytyczny dla
+  zrozumienia granic arbitrażu
+prereg_date: '2026-05-30'
+priority: high
+source: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5262988
+timeframes:
+- 4h

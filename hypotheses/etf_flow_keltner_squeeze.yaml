@@ -1,0 +1,17 @@
+combination_of:
+- keltner_range_reversion
+- new_function_needed
+direction: long
+edge: keltner_range_reversion
+mechanism: <cite index="1-2">ETFs could add another layer as the products bought 213,000
+  BTC in Q4 2024, a 71% jump in holdings, and may be positioned to increase allocations
+  into year-end</cite> - when heavy ETF flows occur during Keltner squeeze, expect
+  powerful directional moves
+name: etf_flow_keltner_squeeze
+notes: Requires new function to track ETF flows, then combine with existing Keltner
+  edge
+prereg_date: '2026-05-29'
+priority: high
+source: https://www.coindesk.com/markets/2025/10/03/bitcoin-to-usd200k-by-end-of-2025-this-cycle-indicator-points-to-explosive-months-ahead
+timeframes:
+- 4h

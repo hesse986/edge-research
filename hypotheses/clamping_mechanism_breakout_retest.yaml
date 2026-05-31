@@ -1,0 +1,13 @@
+combination_of: []
+direction: both
+edge: breakout_retest_v2
+mechanism: Gdy funding rate jest ograniczony przez clamping (±0.75%), występują ekstremalne
+  rozbieżności między perp a spot, które nie są w pełni kompensowane. Po ustaniu presji
+  następuje gwałtowny powrót do równowagi
+name: clamping_mechanism_breakout_retest
+notes: Paper pokazuje, że clamping function tworzy arbitrażowe granice nie-arbitrażu
+prereg_date: '2026-05-29'
+priority: high
+source: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5262988
+timeframes:
+- 4h

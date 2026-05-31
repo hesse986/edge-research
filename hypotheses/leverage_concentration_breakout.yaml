@@ -1,0 +1,14 @@
+combination_of:
+- compression_breakout_v2
+- liquidation_proxy
+direction: both
+edge: compression_breakout_v2
+mechanism: 70% zniszczeń z października nastąpiło w 40 minut przy ratio long/short
+  5.2:1. Ekstremalna koncentracja leverage w jednym kierunku poprzedza gwałtowne ruchy.
+name: leverage_concentration_breakout
+notes: Monitoruj long/short ratio > 4:1 jako setup dla violent breakout
+prereg_date: '2026-05-30'
+priority: medium
+source: https://blog.amberdata.io/how-3.21b-vanished-in-60-seconds-october-2025-crypto-crash-explained-through-7-charts
+timeframes:
+- 4h

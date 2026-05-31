@@ -1,0 +1,14 @@
+combination_of: []
+direction: long
+edge: panic_no_followthrough
+mechanism: ETF regime shift has increased crypto correlation with traditional markets.
+  When traditional market panic occurs without crypto follow-through, it signals oversold
+  conditions
+name: cross_asset_spillover_panic
+notes: Post-ETF crypto shows different spillover patterns. Panic without follow-through
+  indicates institutional buying
+prereg_date: '2026-05-29'
+priority: high
+source: https://quantpedia.com/blog/
+timeframes:
+- 4h

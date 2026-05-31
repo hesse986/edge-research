@@ -1,0 +1,14 @@
+combination_of: []
+direction: both
+edge: vwap_range_reversion
+mechanism: Bitcoin futures expiration creates predictable volume spikes and price
+  dislocations as traders roll positions. These temporary imbalances create VWAP deviations
+  that tend to mean revert post-expiry
+name: bitcoin_futures_expiry_vwap_fade
+notes: Focus on CME futures monthly expiry (last Friday) and quarterly expiry dates.
+  Higher volume = stronger signal
+prereg_date: '2026-05-31'
+priority: high
+source: https://quantpedia.com/cryptocurrency-market-dynamics-around-bitcoin-futures-expiration-events/
+timeframes:
+- 4h

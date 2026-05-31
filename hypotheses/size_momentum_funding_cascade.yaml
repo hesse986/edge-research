@@ -1,0 +1,15 @@
+combination_of:
+- momentum_regime_v2
+- funding_exhaustion_v2
+direction: both
+edge: combination
+mechanism: Small cryptocurrencies show higher momentum returns than large ones. Combined
+  with funding exhaustion signals, this captures liquidation cascades in illiquid
+  altcoins
+name: size_momentum_funding_cascade
+notes: Focus on coins with market cap < $1B for stronger size effect
+prereg_date: '2026-05-31'
+priority: high
+source: https://www.sciencedirect.com/science/article/abs/pii/S1544612321002208
+timeframes:
+- 4h

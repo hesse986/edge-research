@@ -1,0 +1,16 @@
+combination_of:
+- funding_momentum_divergence
+- momentum_regime_v2
+direction: both
+edge: momentum_regime_v2
+mechanism: Modele DAR przewidują kierunek funding rate z wysoką dokładnością. Gdy
+  przewidywany jest wzrost funding (longs płacą więcej), rynek może być przegrzany.
+  Kombinacja z momentum regime pozwala łapać odwrócenia
+name: funding_rate_dar_prediction_momentum
+notes: Użyj przewidywań DAR jako filtra dla momentum regime - wchodź w pozycje przeciwne
+  do ekstremalnych przewidywań funding
+prereg_date: '2026-05-28'
+priority: high
+source: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5576424
+timeframes:
+- 4h

@@ -1,0 +1,13 @@
+combination_of: []
+direction: short
+edge: donchian_acceptance
+mechanism: Crypto's frequent large jumps (mentioned as distinct from traditional markets)
+  create false Donchian breakouts that trap trend followers. Trade the reversal
+name: jump_risk_donchian_trap
+notes: Research shows crypto has frequent large jumps creating 'common disaster' episodes.
+  These create false breakouts
+prereg_date: '2026-05-29'
+priority: medium
+source: https://quantpedia.com/cryptocurrency-as-an-investable-asset-class-10-lessons/
+timeframes:
+- 4h

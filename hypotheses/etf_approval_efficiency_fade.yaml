@@ -1,0 +1,13 @@
+combination_of: []
+direction: both
+edge: volume_climax_reversal
+mechanism: Po zatwierdzeniu Bitcoin ETF, cross-exchange dispersion spadła o 68%. Można
+  szukać momentów gdy stare nieefektywności wracają podczas stresów
+name: etf_approval_efficiency_fade
+notes: Średnia dyspersja między giełdami spadła z wysokich poziomów do 11 bps, ale
+  podczas stresów sięga 587 bps
+prereg_date: '2026-05-30'
+priority: medium
+source: https://papers.ssrn.com/sol3/Delivery.cfm/6239518.pdf?abstractid=6239518&mirid=1
+timeframes:
+- 4h

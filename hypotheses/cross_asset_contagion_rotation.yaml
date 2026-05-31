@@ -1,0 +1,15 @@
+combination_of:
+- relative_strength_rotation
+- momentum_regime_v2
+direction: both
+edge: relative_strength_rotation
+mechanism: SSRN paper shows cross-asset contagion was 20% stronger in 2025 vs 2018,
+  but affects assets differently. During cascades, capital rotates from weaker to
+  stronger assets creating predictable relative strength patterns
+name: cross_asset_contagion_rotation
+notes: Focus on BTC, ETH, SOL, BNB during cascades. Trade pairs not individual assets
+prereg_date: '2026-05-28'
+priority: medium
+source: https://papers.ssrn.com/sol3/Delivery.cfm/5611392.pdf?abstractid=5611392&mirid=1
+timeframes:
+- 4h

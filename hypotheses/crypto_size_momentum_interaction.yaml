@@ -1,0 +1,15 @@
+combination_of:
+- compression_breakout_v2
+- relative_strength_rotation
+direction: both
+edge: compression_breakout_v2
+mechanism: Małe kryptowaluty wykazują silniejszy efekt momentum ze względu na niższą
+  płynność i większą podatność na trend-following. Gdy volatility się kompresuje,
+  następuje akumulacja pozycji przed wybiciem
+name: crypto_size_momentum_interaction
+notes: Fokus na małe altcoiny podczas kompresji BTC
+prereg_date: '2026-05-29'
+priority: high
+source: https://www.researchgate.net/publication/377457967_Time-Series_and_Cross-Sectional_Momentum_in_the_Cryptocurrency_Market_A_Comprehensive_Analysis_under_Realistic_Assumptions
+timeframes:
+- 4h

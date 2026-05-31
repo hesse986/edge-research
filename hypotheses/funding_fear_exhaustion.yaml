@@ -1,0 +1,16 @@
+combination_of:
+- funding_exhaustion_v2
+- sweep_reclaim_v2
+direction: long
+edge: funding_exhaustion_v2
+mechanism: November 2025 data shows funding rates hitting -35% coincided with Fear
+  Index at 11 (extreme fear). This double capitulation signal marks forced long exits
+  completion and swing lows
+name: funding_fear_exhaustion
+notes: Only enter after technical confirmation (higher highs/lows). Extreme fear is
+  contrarian but needs price confirmation
+prereg_date: '2026-05-28'
+priority: medium
+source: https://www.coinchange.io/blog/bitcoins-2-billion-reckoning-how-novembers-liquidations-cascade-exposed-cryptos-structural-fragilities
+timeframes:
+- 4h

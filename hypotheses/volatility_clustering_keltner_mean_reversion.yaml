@@ -1,0 +1,13 @@
+combination_of: []
+direction: both
+edge: keltner_range_reversion
+mechanism: Volatility clustering oznacza że okresy niskiej zmienności następują po
+  okresach niskiej zmienności. W takich warunkach cena często oscyluje w wąskim zakresie,
+  co zwiększa prawdopodobieństwo powrotu do średniej przy dotknięciu granic kanału
+name: volatility_clustering_keltner_mean_reversion
+notes: Dodać filtr zmienności realizowanej < percentyl 30 jako warunek wejścia
+prereg_date: '2026-05-28'
+priority: high
+source: https://quantpedia.com/an-analysis-of-volatility-clustering-of-equity-factor-strategies/
+timeframes:
+- 4h

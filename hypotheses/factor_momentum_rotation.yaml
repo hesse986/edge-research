@@ -1,0 +1,13 @@
+combination_of: []
+direction: both
+edge: relative_strength_rotation
+mechanism: Factor momentum shows past-winning factors continue outperforming. Switch
+  between price momentum and volatility factors based on 1-month performance
+name: factor_momentum_rotation
+notes: Autocorrelation in factor returns stems primarily from size and volatility
+  anomalies
+prereg_date: '2026-05-31'
+priority: medium
+source: https://www.tandfonline.com/doi/abs/10.1080/14697688.2023.2269999
+timeframes:
+- 4h

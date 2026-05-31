@@ -1,0 +1,13 @@
+combination_of: []
+direction: both
+edge: compression_breakout_v2
+mechanism: Niskie okresy zmienności często poprzedzają duże ruchy (volatility clustering)
+  - kompresja zmienności prowadzi do eksplozywnych ruchów
+name: low_volatility_compression_breakout
+notes: Identyfikować okresy kompresji zmienności i grać breakout gdy zmienność zaczyna
+  rosnąć
+prereg_date: '2026-05-30'
+priority: high
+source: https://quantpedia.com/an-analysis-of-volatility-clustering-of-equity-factor-strategies/
+timeframes:
+- 4h

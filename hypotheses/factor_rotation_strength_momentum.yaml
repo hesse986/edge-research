@@ -1,0 +1,13 @@
+combination_of: []
+direction: long
+edge: relative_strength_rotation
+mechanism: Small cap crypto outperforms in risk-on environments while momentum dominates
+  in trending markets. Factor rotation based on relative strength captures both regimes
+name: factor_rotation_strength_momentum
+notes: Create size factor index (bottom 50% market cap) vs momentum index (top 20%
+  30d return), trade stronger factor
+prereg_date: '2026-05-31'
+priority: medium
+source: https://quantpedia.com/cryptocurrency-as-an-investable-asset-class-10-lessons/
+timeframes:
+- 4h

@@ -1,0 +1,13 @@
+combination_of: []
+direction: both
+edge: funding_exhaustion_v2
+mechanism: Small cryptocurrencies show higher momentum returns but more noise. Filtering
+  funding exhaustion to top market cap coins reduces false signals from manipulation
+  while capturing institutional positioning
+name: size_filtered_funding_exhaustion
+notes: Only trade funding exhaustion on top 10 coins by market cap to avoid manipulation
+prereg_date: '2026-05-27'
+priority: medium
+source: https://www.sciencedirect.com/science/article/abs/pii/S1544612321002208
+timeframes:
+- 4h

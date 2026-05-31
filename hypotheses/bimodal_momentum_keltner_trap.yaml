@@ -1,0 +1,15 @@
+combination_of:
+- keltner_range_reversion
+- failed_breakout_range_v2
+direction: both
+edge: keltner_range_reversion
+mechanism: Akcje z wysokim i niskim momentum mają bimodalny rozkład zwrotów. Keltner
+  bands pomagają identyfikować ekstremalne rozciągnięcia gdzie prawdopodobieństwo
+  reversal rośnie
+name: bimodal_momentum_keltner_trap
+notes: Szukaj ekstremów momentum poza Keltner bands
+prereg_date: '2026-05-29'
+priority: medium
+source: https://www.researchgate.net/publication/377457967_Time-Series_and_Cross-Sectional_Momentum_in_the_Cryptocurrency_Market_A_Comprehensive_Analysis_under_Realistic_Assumptions
+timeframes:
+- 4h

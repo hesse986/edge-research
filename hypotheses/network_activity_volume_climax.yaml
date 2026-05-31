@@ -1,0 +1,12 @@
+combination_of: []
+direction: both
+edge: volume_climax_reversal
+mechanism: On-chain metrics like gas fees and transaction graphs predict next-day
+  moves. Volume climax on-chain often marks local tops/bottoms
+name: network_activity_volume_climax
+notes: Use on-chain transaction volume instead of exchange volume for climax detection
+prereg_date: '2026-05-30'
+priority: medium
+source: https://arxiv.org/html/2509.09751v1
+timeframes:
+- 4h

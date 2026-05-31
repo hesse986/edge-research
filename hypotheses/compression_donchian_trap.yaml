@@ -1,0 +1,14 @@
+combination_of:
+- compression_breakout_v2
+- donchian_acceptance
+direction: short
+edge: combination
+mechanism: Low volatility compression creates coiled energy. When breakouts fail at
+  Donchian extremes, it signals false moves ideal for fading
+name: compression_donchian_trap
+notes: Best in ranging markets where breakouts frequently fail
+prereg_date: '2026-05-31'
+priority: medium
+source: https://www.mdpi.com/2227-7390/12/9/1351
+timeframes:
+- 4h

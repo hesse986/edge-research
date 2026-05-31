@@ -1,0 +1,15 @@
+combination_of:
+- funding_exhaustion_v2
+- breakout_retest_v2
+direction: both
+edge: breakout_retest_v2
+mechanism: Gdy funding rate osiąga limit (clamp), presja może prowadzić do gwałtownego
+  ruchu ceny. Po przebiciu poziomu, retest może oferować dobry RR
+name: funding_clamp_breakout_retest
+notes: Identyfikuj gdy funding osiąga limity giełdowe, czekaj na breakout i traduj
+  retest
+prereg_date: '2026-05-28'
+priority: medium
+source: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6185958
+timeframes:
+- 4h

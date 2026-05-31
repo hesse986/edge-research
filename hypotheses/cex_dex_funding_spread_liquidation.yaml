@@ -1,0 +1,16 @@
+combination_of:
+- funding_exhaustion_v2
+- liquidation_proxy
+direction: both
+edge: liquidation_proxy
+mechanism: CEX dominują price discovery z 61% wyższą integracją niż DEX. Duże różnice
+  funding między CEX/DEX sygnalizują nieefektywności. Liquidation proxy może wskazać
+  kiedy spread się odwróci
+name: cex_dex_funding_spread_liquidation
+notes: Monitoruj spread funding CEX vs DEX, wchodź gdy spread jest ekstremalny a liquidation
+  proxy sugeruje odwrócenie
+prereg_date: '2026-05-28'
+priority: high
+source: https://www.mdpi.com/2227-7390/14/2/346
+timeframes:
+- 4h

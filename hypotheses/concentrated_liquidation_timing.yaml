@@ -1,0 +1,16 @@
+combination_of:
+- compression_breakout_v2
+- panic_no_followthrough
+direction: both
+edge: compression_breakout_v2
+mechanism: October 2025 data shows liquidations accelerate 86x during peak cascade
+  periods vs normal. This extreme concentration creates predictable volatility expansion
+  followed by mean reversion as leverage is flushed
+name: concentrated_liquidation_timing
+notes: Look for compression periods followed by sudden liquidation spikes. Trade volatility
+  expansion then reversal
+prereg_date: '2026-05-28'
+priority: high
+source: https://blog.amberdata.io/how-3.21b-vanished-in-60-seconds-october-2025-crypto-crash-explained-through-7-charts
+timeframes:
+- 4h

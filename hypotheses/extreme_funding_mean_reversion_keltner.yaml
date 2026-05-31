@@ -1,0 +1,14 @@
+combination_of:
+- funding_exhaustion_v2
+- keltner_range_reversion
+direction: short
+edge: keltner_range_reversion
+mechanism: Funding rates kilka SD powyżej średniej wskazują przegrzanie. Longs zamykają
+  pozycje by uniknąć opłat. Keltner channels pomagają określić timing wejścia
+name: extreme_funding_mean_reversion_keltner
+notes: Short gdy funding >3SD i cena dotyka górnej bandy Keltner
+prereg_date: '2026-05-28'
+priority: high
+source: https://yellow.com/learn/how-to-read-funding-rates-crypto-reversals
+timeframes:
+- 4h

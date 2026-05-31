@@ -1,0 +1,12 @@
+combination_of: []
+direction: long
+edge: compression_breakout_v2
+mechanism: Mniej popularne aktywa mają wyższe premie za ryzyko - breakouty z kompresji
+  volatility na takich aktywach powinny być silniejsze
+name: exotic_asset_breakout_illiquidity_premium
+notes: Aplikacja teorii popularity asset pricing Ibbotson'a do krypto
+prereg_date: '2026-05-28'
+priority: medium
+source: https://quantpedia.com/how-to-use-exotic-assets-to-improve-your-trading-strategy/
+timeframes:
+- 4h

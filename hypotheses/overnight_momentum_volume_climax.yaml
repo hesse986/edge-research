@@ -1,0 +1,16 @@
+combination_of:
+- momentum_regime_v2
+- volume_climax_reversal
+direction: both
+edge: volume_climax_reversal
+mechanism: Bitcoin shows distinct overnight patterns (US off-hours) with momentum
+  shifts. Combining this with volume climax detection can identify reversal points
+  when institutional flows exhaust
+name: overnight_momentum_volume_climax
+notes: Research shows Bitcoin overnight sessions have unique patterns. Combine with
+  volume exhaustion for high probability reversals
+prereg_date: '2026-05-29'
+priority: high
+source: https://quantpedia.com/top-ten-blog-posts-on-quantpedia-in-2024/
+timeframes:
+- 4h

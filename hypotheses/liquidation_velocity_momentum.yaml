@@ -1,0 +1,16 @@
+combination_of:
+- liquidation_proxy
+- momentum_regime_v2
+direction: short
+edge: momentum_regime_v2
+mechanism: Kaskady likwidacji z października 2025 pokazały 86x przyspieszenie tempa
+  likwidacji w ciągu 40 minut. Nagły wzrost prędkości likwidacji sygnalizuje początek
+  kaskady i momentum w kierunku likwidacji.
+name: liquidation_velocity_momentum
+notes: Monitoruj przyspieszenie liquidation rate - gdy przekroczy 10x średniej, wejdź
+  short z momentum
+prereg_date: '2026-05-30'
+priority: high
+source: https://blog.amberdata.io/how-3.21b-vanished-in-60-seconds-october-2025-crypto-crash-explained-through-7-charts
+timeframes:
+- 4h

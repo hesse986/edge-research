@@ -1,0 +1,14 @@
+combination_of:
+- volume_climax_reversal
+- vwap_range_reversion
+direction: both
+edge: combination
+mechanism: BTC-neutral residual mean reversion shows Sharpe 2.3 post-2021. Volume
+  climax marks extremes where idiosyncratic moves reverse
+name: mean_reversion_post_climax
+notes: Works best in choppy, range-bound conditions post-2021
+prereg_date: '2026-05-31'
+priority: high
+source: https://medium.com/@briplotnik/systematic-crypto-trading-strategies-momentum-mean-reversion-volatility-filtering-8d7da06d60ed
+timeframes:
+- 4h

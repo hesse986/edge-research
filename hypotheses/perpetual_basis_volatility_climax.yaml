@@ -1,0 +1,13 @@
+combination_of: []
+direction: both
+edge: volume_climax_reversal
+mechanism: Ekstremalne odchylenia basis (perp-spot) podczas kryzysów tworzą okazje
+  do mean reversion, szczególnie gdy towarzyszy im volume climax
+name: perpetual_basis_volatility_climax
+notes: Paper pokazuje, że perpetuale redukują basis risk ale wciąż występują ekstremalne
+  odchylenia
+prereg_date: '2026-05-29'
+priority: medium
+source: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5036933
+timeframes:
+- 4h

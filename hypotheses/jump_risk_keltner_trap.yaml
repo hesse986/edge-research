@@ -1,0 +1,14 @@
+combination_of: []
+direction: both
+edge: keltner_range_reversion
+mechanism: Crypto markets experience frequent large jumps that create temporary dislocations.
+  When price jumps beyond Keltner channels but lacks follow-through volume, it tends
+  to revert to the channel
+name: jump_risk_keltner_trap
+notes: Use 3x ATR Keltner bands, require >2 sigma move in single candle to qualify
+  as jump. Best in low volatility regimes
+prereg_date: '2026-05-31'
+priority: high
+source: https://quantpedia.com/cryptocurrency-as-an-investable-asset-class-10-lessons/
+timeframes:
+- 4h

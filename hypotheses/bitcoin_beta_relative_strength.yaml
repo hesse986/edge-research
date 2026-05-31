@@ -1,0 +1,12 @@
+combination_of: []
+direction: both
+edge: relative_strength_rotation
+mechanism: Altcoiny z wysokim bitcoin beta reagują silniej na ruchy BTC. Gdy BTC funding
+  jest ekstremalny, altcoiny z wysokim beta oferują lepsze okazje
+name: bitcoin_beta_relative_strength
+notes: Wykorzystać różnice w wrażliwości altcoinów na ruchy BTC
+prereg_date: '2026-05-29'
+priority: medium
+source: https://dspace.mit.edu/bitstream/handle/1721.1/130495/SSRN-id3171204.pdf
+timeframes:
+- 4h

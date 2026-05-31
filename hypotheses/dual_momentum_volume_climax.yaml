@@ -1,0 +1,15 @@
+combination_of:
+- momentum_regime_v2
+- volume_climax_reversal
+direction: both
+edge: combination
+mechanism: Porównuje momentum crypto vs bezpieczna przystań (stablecoin yield). Volume
+  climax identyfikuje punkty wyczerpania trendu. Przełącza między agresywnym momentum
+  a obroną kapitału
+name: dual_momentum_volume_climax
+notes: Dual momentum daje lepsze risk-adjusted returns i ochronę przed drawdowns
+prereg_date: '2026-05-29'
+priority: medium
+source: https://factorlab.medium.com/optimizing-returns-dual-momentum-strategy-on-low-volatility-momentum-multi-factor-combo-and-gold-4380327529fa
+timeframes:
+- 4h

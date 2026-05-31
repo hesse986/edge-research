@@ -1,0 +1,16 @@
+combination_of:
+- panic_no_followthrough
+- liquidation_proxy
+- donchian_acceptance
+direction: long
+edge: combination_of
+mechanism: 'Panic states create liquidation cascades but often exhaust quickly. Triple
+  signal: panic with no follow-through, liquidation clusters, AND price acceptance
+  at Donchian channels provides high conviction reversal'
+name: panic_liquidation_donchian
+notes: 'Requires all 3 conditions: panic exhaustion + liquidations + channel support'
+prereg_date: '2026-05-27'
+priority: high
+source: https://link.springer.com/article/10.1007/s11408-025-00474-9
+timeframes:
+- 4h

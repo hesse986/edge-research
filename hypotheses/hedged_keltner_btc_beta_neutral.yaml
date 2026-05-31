@@ -1,0 +1,14 @@
+combination_of:
+- keltner_range_reversion
+- relative_strength_rotation
+direction: both
+edge: keltner_range_reversion
+mechanism: Altcoiny mają silną korelację z BTC - hedging beta pozwala na czystszą
+  ekspozycję na mean reversion w kanałach Keltnera
+name: hedged_keltner_btc_beta_neutral
+notes: Wykorzystuje koncepcję systematycznego hedgingu BTC beta z badań Quantpedia
+prereg_date: '2026-05-28'
+priority: high
+source: https://quantpedia.com/systematic-hedging-of-the-cryptocurrency-portfolio/
+timeframes:
+- 4h

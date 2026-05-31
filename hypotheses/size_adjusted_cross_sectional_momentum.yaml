@@ -1,0 +1,13 @@
+combination_of: []
+direction: both
+edge: relative_strength_rotation
+mechanism: Małe krypto mają większą nieefektywność i silniejsze momentum ze względu
+  na mniejszą płynność i wolniejszą dyfuzję informacji
+name: size_adjusted_cross_sectional_momentum
+notes: Paper pokazuje że momentum effect jest silniejszy w małych krypto - można wykorzystać
+  relative_strength_rotation z filtrem size
+prereg_date: '2026-05-28'
+priority: high
+source: https://www.researchgate.net/publication/377457967_Time-Series_and_Cross-Sectional_Momentum_in_the_Cryptocurrency_Market
+timeframes:
+- 4h

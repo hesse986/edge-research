@@ -1,0 +1,14 @@
+combination_of:
+- momentum_regime_v2
+- panic_no_followthrough
+direction: both
+edge: momentum_regime_v2
+mechanism: Crypto momentum ma wysokie crash risk - zarządzanie volatility pozwala
+  uniknąć nagłych odwróceń
+name: momentum_crash_protection_volatility
+notes: Wykorzystać panic_no_followthrough jako filtr chroniący przed momentum crash
+prereg_date: '2026-05-28'
+priority: medium
+source: https://arxiv.org/html/2604.26747v1
+timeframes:
+- 4h

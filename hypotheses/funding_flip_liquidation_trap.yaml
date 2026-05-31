@@ -1,0 +1,15 @@
+combination_of:
+- funding_exhaustion_v2
+- liquidation_proxy
+direction: short
+edge: funding_exhaustion_v2
+mechanism: Funding rates spadły z -20% do -35% podczas kaskady, sygnalizując masowe
+  wyjścia z longów. Ekstremalne ujemne funding po okresie dodatniego wskazuje na nadchodzącą
+  kaskadę.
+name: funding_flip_liquidation_trap
+notes: Gdy funding zmienia się z dodatniego na głęboko ujemne (-30%+), oczekuj kaskady
+prereg_date: '2026-05-30'
+priority: high
+source: https://www.coinchange.io/blog/bitcoins-2-billion-reckoning-how-novembers-liquidations-cascade-exposed-cryptos-structural-fragilities
+timeframes:
+- 4h

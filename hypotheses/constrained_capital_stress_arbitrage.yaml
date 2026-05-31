@@ -1,0 +1,15 @@
+combination_of:
+- panic_no_followthrough
+- vwap_range_reversion
+direction: both
+edge: panic_no_followthrough
+mechanism: Podczas stresów rynkowych arbitrażyści wycofują kapitał, powiększając nieefektywności.
+  Można wykorzystać ekstremalne odchylenia basis wiedząc, że powrócą gdy stress minie
+name: constrained_capital_stress_arbitrage
+notes: Paper dokumentuje, że perpetuals redukują drawdowns arbitrażystów o 30-50%
+  podczas kryzysów
+prereg_date: '2026-05-30'
+priority: high
+source: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5036933
+timeframes:
+- 4h

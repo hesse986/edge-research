@@ -1,0 +1,13 @@
+combination_of: []
+direction: long
+edge: breakout_retest_v2
+mechanism: When systematic hedging strategies unwind positions (based on X-day highs),
+  it creates predictable breakout patterns. Trade the retest of these levels
+name: hedge_unwind_breakout_retest
+notes: Hedging strategies using X-day highs create predictable unwind flows around
+  44-47% return levels
+prereg_date: '2026-05-29'
+priority: medium
+source: https://quantpedia.com/systematic-hedging-of-the-cryptocurrency-portfolio/
+timeframes:
+- 4h

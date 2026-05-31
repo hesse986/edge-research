@@ -1,0 +1,16 @@
+combination_of:
+- panic_no_followthrough
+- funding_exhaustion_v2
+direction: long
+edge: panic_no_followthrough
+mechanism: When institutional traders hedge heavily via BTC derivatives (visible in
+  futures/perp funding), it often marks local bottoms in altcoin panic selling. The
+  hedging activity provides exit liquidity for reversal
+name: hedged_portfolio_panic_reversal
+notes: Monitor BTC futures open interest spikes + negative funding as confirmation
+  for altcoin panic reversals
+prereg_date: '2026-05-31'
+priority: medium
+source: https://quantpedia.com/systematic-hedging-of-the-cryptocurrency-portfolio/
+timeframes:
+- 4h

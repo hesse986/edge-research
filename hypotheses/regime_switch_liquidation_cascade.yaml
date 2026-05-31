@@ -1,0 +1,15 @@
+combination_of:
+- liquidation_proxy
+- momentum_regime_v2
+direction: both
+edge: liquidation_proxy
+mechanism: Modele z przełączaniem reżimów wykazują przewagę w łapaniu nagłych zmian.
+  Liquidation proxy może sygnalizować nadchodzące przełączenie reżimu zanim nastąpi
+  ruch cenowy
+name: regime_switch_liquidation_cascade
+notes: Monitoruj nagłe skoki w liquidation proxy jako early warning
+prereg_date: '2026-05-29'
+priority: high
+source: https://arxiv.org/html/2508.02758v1
+timeframes:
+- 4h

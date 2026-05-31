@@ -1,0 +1,16 @@
+combination_of: []
+direction: short
+edge: liquidation_proxy
+mechanism: <cite index="8-1,8-5">The PDE model enables us to describe the influence
+  of the clusters on the price over time. spectral analysis of the bitcoin transaction
+  network is applied to obtain chainlet clusters to represent different transaction
+  patterns and predictive utilities</cite> - unusual transaction patterns often precede
+  liquidations
+name: chainlet_cluster_liquidation_proxy
+notes: Monitor for abnormal clustering in transaction network as early warning for
+  liquidations
+prereg_date: '2026-05-29'
+priority: high
+source: https://arxiv.org/pdf/2001.03099
+timeframes:
+- 4h

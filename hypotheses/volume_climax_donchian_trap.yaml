@@ -1,0 +1,15 @@
+combination_of:
+- volume_climax_reversal
+- donchian_acceptance
+direction: both
+edge: combination
+mechanism: Climax volume przy breakout z kanału Donchiana często sygnalizuje wyczerpanie
+  ruchu. Jeśli cena szybko wraca do kanału (failed breakout), prawdopodobne jest głębsze
+  odwrócenie
+name: volume_climax_donchian_trap
+notes: Volume climax jako warunek konieczny, powrót do kanału jako trigger
+prereg_date: '2026-05-28'
+priority: high
+source: https://quantpedia.com/revisiting-trend-following-and-mean-reversion-strategies-in-bitcoin/
+timeframes:
+- 4h

@@ -1,0 +1,13 @@
+combination_of: []
+direction: both
+edge: relative_strength_rotation
+mechanism: BTC-neutral residual mean reversion showed Sharpe 2.3 in research. Applying
+  relative strength rotation to BTC-hedged positions captures idiosyncratic momentum
+  without market beta
+name: btc_neutral_relative_strength
+notes: Calculate relative strength after removing BTC correlation component
+prereg_date: '2026-05-27'
+priority: medium
+source: https://medium.com/@briplotnik/systematic-crypto-trading-strategies-momentum-mean-reversion-volatility-filtering-8d7da06d60ed
+timeframes:
+- 4h

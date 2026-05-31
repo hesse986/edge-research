@@ -1,0 +1,17 @@
+combination_of:
+- liquidation_proxy
+- volume_climax_reversal
+direction: short
+edge: liquidation_proxy
+mechanism: As shown in October 2025 crash, order book imbalances create self-reinforcing
+  feedback loops - initial selling creates imbalance, triggering algorithmic selling,
+  which exacerbates imbalance. Detecting the acceleration of this pattern can capture
+  the beginning of cascades
+name: flash_crash_imbalance_cascade
+notes: Focus on rate of change of order book imbalance rather than absolute values.
+  Exit when imbalance normalizes
+prereg_date: '2026-05-28'
+priority: high
+source: https://arxiv.org/html/2602.00776v1
+timeframes:
+- 4h
