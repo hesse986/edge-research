@@ -227,6 +227,7 @@ def load_binance_open_interest(symbol, timeframe="4h", start=None, end=None, use
         time.sleep(0.1)
 
     if not all_data:
+        print(f"⚠️  OI {symbol}: API nie zwróciło żadnych danych dla {start}–{end}.")
         return pd.Series(dtype=float)
 
     df = pd.DataFrame(all_data)
@@ -234,12 +235,33 @@ def load_binance_open_interest(symbol, timeframe="4h", start=None, end=None, use
     df = df.set_index("timestamp").sort_index()
     oi = df["sumOpenInterest"].astype(float)
 
-    # Trim do żądanego zakresu i resample do docelowego interwału
+    # Trim do żądanego zakresu
     if start:
         oi = oi[oi.index >= pd.Timestamp(start, tz="UTC")]
     if end:
         oi = oi[oi.index <= pd.Timestamp(end, tz="UTC")]
+
+    if oi.empty:
+        print(f"⚠️  OI {symbol}: brak danych w żądanym zakresie {start}–{end}.")
+        return pd.Series(dtype=float)
+
+    # Resample do docelowego interwału
     oi = oi.resample(timeframe).last()
+
+    # Ostrzeżenie, gdy realne pokrycie jest znacznie krótsze niż żądane.
+    # Binance openInterestHist zwraca ograniczoną historię (typowo ostatnie ~30 dni),
+    # więc dla dłuższych zakresów dane będą niepełne — lepiej o tym głośno wiedzieć.
+    if start and end:
+        req_start = pd.Timestamp(start, tz="UTC")
+        req_end   = pd.Timestamp(end, tz="UTC")
+        req_span  = (req_end - req_start).total_seconds()
+        got_span  = (oi.index.max() - oi.index.min()).total_seconds()
+        if req_span > 0 and got_span < 0.8 * req_span:
+            print(f"⚠️  OI {symbol}: pokryto {got_span/86400:.1f} dni "
+                  f"({oi.index.min().date()}–{oi.index.max().date()}) "
+                  f"z żądanych {req_span/86400:.1f} dni "
+                  f"({req_start.date()}–{req_end.date()}). "
+                  f"openInterestHist zwraca ograniczoną historię.")
 
     if use_cache:
         oi.to_pickle(cache_file)
