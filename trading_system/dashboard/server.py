@@ -5,8 +5,8 @@ Dostęp: http://localhost:8000
 """
 import csv
 import json
+import sys
 import numpy as np
-import requests
 from pathlib import Path
 from datetime import datetime, timezone
 from fastapi import FastAPI
@@ -14,6 +14,9 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 BASE = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(BASE))
+from trading_system.research.live_data import live_spread_zscore
+
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"])
 
@@ -54,24 +57,20 @@ def compute_equity(returns):
         eq.append(round(eq[-1] * (1 + float(r) * 0.01), 2))
     return eq
 
-def get_zscore(sym1, sym2, hedge, lookback=30):
-    """Pobiera live Z-score z Binance."""
+def get_zscore(sym1, sym2, lookback=30):
+    """Live Z-score przez wspólny helper (rolling OLS, jedno źródło prawdy).
+
+    Dashboard = podgląd, więc closed_only=False (pokazuje formującą się świecę).
+    """
     try:
-        needed = lookback + 10
-        url = "https://api.binance.com/api/v3/klines"
-        p1 = [float(c[4]) for c in requests.get(url, params={"symbol": sym1.replace("/",""), "interval": "4h", "limit": needed}, timeout=5).json()]
-        p2 = [float(c[4]) for c in requests.get(url, params={"symbol": sym2.replace("/",""), "interval": "4h", "limit": needed}, timeout=5).json()]
-        if len(p1) < lookback or len(p2) < lookback:
+        data = live_spread_zscore(sym1, sym2, lookback=lookback, closed_only=False)
+        if data is None:
             return None
-        spread = [p1[i] - hedge * p2[i] for i in range(len(p1))]
-        mean   = np.mean(spread[-lookback:])
-        std    = np.std(spread[-lookback:])
-        z      = (spread[-1] - mean) / std if std > 0 else 0
         return {
-            "z":       round(float(z), 3),
-            "spread":  round(float(spread[-1]), 3),
-            "price1":  round(p1[-1], 4),
-            "price2":  round(p2[-1], 4),
+            "z":       round(data["z"], 3),
+            "spread":  round(data["spread_last"], 3),
+            "price1":  round(data["price1"], 4),
+            "price2":  round(data["price2"], 4),
         }
     except Exception as e:
         return {"error": str(e)}
@@ -110,13 +109,13 @@ def positions():
 @app.get("/api/zscore")
 def zscore():
     pairs = [
-        ("LTC/USDT",  "ADA/USDT",   19.02, "ltc_ada"),
-        ("ADA/USDT",  "LINK/USDT",   0.0199, "ada_link"),
-        ("BNB/USDT",  "SOL/USDT",    0.0393, "bnb_sol"),
+        ("LTC/USDT",  "ADA/USDT",  "ltc_ada"),
+        ("ADA/USDT",  "LINK/USDT", "ada_link"),
+        ("BNB/USDT",  "SOL/USDT",  "bnb_sol"),
     ]
     result = {}
-    for s1, s2, h, name in pairs:
-        result[name] = get_zscore(s1, s2, h)
+    for s1, s2, name in pairs:
+        result[name] = get_zscore(s1, s2)
         result[name]["pair"] = f"{s1[:3]}/{s2[:3]}"
         result[name]["signal"] = (
             "SHORT" if result[name].get("z", 0) >  2.0 else
@@ -181,37 +180,25 @@ def processes():
 
 @app.get("/api/spread_chart/{pair_name}")
 def spread_chart(pair_name: str):
-    """Zwraca historię spreadu dla pary z liniami entry/TP/SL."""
-    import requests as _req
-    import numpy as _np
+    """Zwraca historię spreadu dla pary z liniami entry/TP/SL.
 
+    Spread liczony wspólnym helperem (rolling OLS) — bez stałej bety.
+    """
     pair_config = {
-        "ltc_ada":  ("LTC/USDT", "ADA/USDT",  19.02),
-        "ada_link": ("ADA/USDT", "LINK/USDT",  0.0199),
-        "bnb_sol":  ("BNB/USDT", "SOL/USDT",   0.0393),
+        "ltc_ada":  ("LTC/USDT", "ADA/USDT"),
+        "ada_link": ("ADA/USDT", "LINK/USDT"),
+        "bnb_sol":  ("BNB/USDT", "SOL/USDT"),
     }
 
     if pair_name not in pair_config:
         return {"error": "Unknown pair"}
 
-    sym1, sym2, hedge = pair_config[pair_name]
-    url = "https://api.binance.com/api/v3/klines"
+    sym1, sym2 = pair_config[pair_name]
 
     try:
-        r1 = _req.get(url, params={"symbol": sym1.replace("/",""), "interval": "4h", "limit": 60}, timeout=5)
-        r2 = _req.get(url, params={"symbol": sym2.replace("/",""), "interval": "4h", "limit": 60}, timeout=5)
-        candles1 = r1.json()
-        candles2 = r2.json()
-
-        timestamps = [int(c[0]) for c in candles1]
-        p1 = [float(c[4]) for c in candles1]
-        p2 = [float(c[4]) for c in candles2]
-        spread = [p1[i] - hedge * p2[i] for i in range(len(p1))]
-
-        lookback = 30
-        mean = _np.mean(spread[-lookback:])
-        std  = _np.std(spread[-lookback:])
-        zscore = [(s - mean) / std if std > 0 else 0 for s in spread]
+        data = live_spread_zscore(sym1, sym2, lookback=30, history=60, closed_only=False)
+        if data is None:
+            return {"error": "Za mało danych"}
 
         # Pobierz otwarte pozycje dla tej pary
         open_positions = []
@@ -227,11 +214,11 @@ def spread_chart(pair_name: str):
                 })
 
         return {
-            "timestamps": timestamps,
-            "spread":     spread,
-            "zscore":     zscore,
-            "mean":       float(mean),
-            "std":        float(std),
+            "timestamps": data["timestamps"],
+            "spread":     data["spread"],
+            "zscore":     data["zscore"],
+            "mean":       data["mean"],
+            "std":        data["std"],
             "open_positions": open_positions,
         }
     except Exception as e:
