@@ -4,13 +4,11 @@
 import time
 import csv
 import numpy as np
-import pandas as pd
-import requests
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 import sys
 sys.path.insert(0, '.')
-from trading_system.research.hedge import compute_spread, beta_window_for
+from trading_system.research.live_data import live_spread_zscore
 
 # ==================================================
 # KONFIGURACJA
@@ -41,35 +39,20 @@ CB_COOLDOWN_H = 24
 # POBIERANIE DANYCH
 # ==================================================
 def get_zscore_live(sym1, sym2, lookback=LOOKBACK, beta_mult=BETA_MULT):
-    """Live Z-score z Binance API.
+    """Live Z-score przez wspólny helper (rolling OLS, jedno źródło prawdy).
 
-    Spread liczony tym samym helperem co backtest (rolling OLS, beta z danych < i),
-    więc spread live jest identyczny metodologicznie z research. Beta nie jest
-    już hardkodowana — re-estymowana z okna [i-window, i-1] na każdej świecy.
+    closed_only=True: z-score liczony na OSTATNIEJ DOMKNIĘTEJ świecy 4h — decyzje
+    wejścia/wyjścia zapadają tylko po zamknięciu świecy (bramkowanie w pętli przez
+    candle_ts). Błędy sieci/limitu obsługuje live_spread_zscore (retry/backoff/429);
+    wyjątek propaguje do try/except wokół pary w pętli głównej.
+
+    Zwraca (z, spread_last, atr, candle_ts) albo None gdy za mało danych.
     """
-    window = beta_window_for(lookback, beta_mult)
-    needed = window + lookback + 10
-    url = "https://api.binance.com/api/v3/klines"
-    try:
-        r1 = requests.get(url, params={"symbol": sym1.replace("/",""), "interval": "4h", "limit": needed}, timeout=10)
-        r2 = requests.get(url, params={"symbol": sym2.replace("/",""), "interval": "4h", "limit": needed}, timeout=10)
-        p1 = [float(c[4]) for c in r1.json()]
-        p2 = [float(c[4]) for c in r2.json()]
-        n = min(len(p1), len(p2))
-        if n < window + lookback:
-            return None, None, None
-        # Spread out-of-sample (rolling OLS) — ten sam kod co backtest.
-        spread = compute_spread(pd.Series(p1[-n:]), pd.Series(p2[-n:]), window).dropna().to_numpy()
-        if len(spread) < lookback:
-            return None, None, None
-        mean = np.mean(spread[-lookback:])
-        std  = np.std(spread[-lookback:])
-        z    = (spread[-1] - mean) / std if std > 0 else 0
-        atr  = np.mean([abs(spread[i] - spread[i-1]) for i in range(1, len(spread))])
-        return float(z), float(spread[-1]), float(atr)
-    except Exception as e:
-        print(f"  Błąd get_zscore_live ({sym1}/{sym2}): {e}")
-        return None, None, None
+    data = live_spread_zscore(sym1, sym2, lookback=lookback, beta_mult=beta_mult,
+                              closed_only=True)
+    if data is None:
+        return None
+    return data["z"], data["spread_last"], data["atr"], data["candle_ts"]
 
 # ==================================================
 # LOG CSV
@@ -132,6 +115,121 @@ def close_position(name, spread, r, exit_reason):
     return updated
 
 # ==================================================
+# PRZETWARZANIE JEDNEJ PARY
+# ==================================================
+def process_pair(now, a1, a2, name, positions, entry_data, cons_losses, cb_until, last_candle):
+    """Przetwarza jedną parę: dane → bramka świecy → CB → wejście/wyjście.
+
+    Mutuje słowniki stanu. Decyzje wejścia/wyjścia zapadają TYLKO gdy domknęła
+    się NOWA świeca 4h (porównanie candle_ts) — eliminuje churn na formującej się
+    świecy. Wyświetlanie z-score dzieje się przy każdym pollu (podgląd).
+    """
+    data = get_zscore_live(a1, a2)
+    if data is None:
+        print(f"[{now}] {name}: brak danych")
+        return
+    z, spread, atr, candle_ts = data
+    if z is None or np.isnan(z):
+        print(f"[{now}] {name}: brak danych")
+        return
+
+    print(f"[{now}] {name}: Z={z:.3f} spread={spread:.6f} atr={atr:.6f}")
+
+    # ── BRAMKA ANTY-CHURN ────────────────────────────────────
+    # Handluj tylko, gdy pojawiła się nowa DOMKNIĘTA świeca 4h.
+    if candle_ts == last_candle[name]:
+        return
+    last_candle[name] = candle_ts
+
+    # Circuit breaker
+    if cb_until[name] is not None:
+        if datetime.now(timezone.utc) < cb_until[name]:
+            print(f"  ⚠️  {name}: CB aktywny do {cb_until[name].strftime('%H:%M UTC')}")
+            return
+        else:
+            cb_until[name] = None
+            cons_losses[name] = 0
+            print(f"  ✅ {name}: circuit breaker wygasł")
+
+    pos = positions[name]
+    atr_safe = max(atr, abs(spread) * 0.005)  # min 0.5% spreadu
+
+    # ── WEJŚCIE ──────────────────────────────
+    if pos == 0:
+        if z < -ENTRY_Z:
+            # LONG spread: oczekujemy wzrostu spreadu
+            sl = spread - SL_MULT * atr_safe
+            tp = spread + RR * SL_MULT * atr_safe
+            direction = f"LONG_{a1.split('/')[0]}_SHORT_{a2.split('/')[0]}"
+            positions[name]  = 1
+            entry_data[name] = {
+                "entry_spread": spread, "sl": sl, "tp": tp,
+                "entry_z": z, "entry_time": now, "direction": direction
+            }
+            write_open(now, name, direction, z, spread, spread, sl, tp,
+                       abs(1.0 / atr_safe) if atr_safe > 0 else 0, spread * 100)
+            print(f"  *** LONG {name} Z={z:.2f} entry={spread:.6f} SL={sl:.6f} TP={tp:.6f}")
+
+        elif z > ENTRY_Z:
+            # SHORT spread: oczekujemy spadku spreadu
+            sl = spread + SL_MULT * atr_safe
+            tp = spread - RR * SL_MULT * atr_safe
+            direction = f"SHORT_{a1.split('/')[0]}_LONG_{a2.split('/')[0]}"
+            positions[name]  = -1
+            entry_data[name] = {
+                "entry_spread": spread, "sl": sl, "tp": tp,
+                "entry_z": z, "entry_time": now, "direction": direction
+            }
+            write_open(now, name, direction, z, spread, spread, sl, tp,
+                       abs(1.0 / atr_safe) if atr_safe > 0 else 0, spread * 100)
+            print(f"  *** SHORT {name} Z={z:.2f} entry={spread:.6f} SL={sl:.6f} TP={tp:.6f}")
+
+    # ── WYJŚCIE ──────────────────────────────
+    else:
+        ed = entry_data[name]
+        exit_reason = None
+
+        if pos == 1:  # LONG – oczekujemy wzrostu spreadu
+            if spread <= ed["sl"]:
+                exit_reason = "SL"
+            elif spread >= ed["tp"]:
+                exit_reason = "TP"
+            elif z > -EXIT_Z:
+                exit_reason = "EXIT_Z"
+
+        else:  # SHORT – oczekujemy spadku spreadu
+            if spread >= ed["sl"]:
+                exit_reason = "SL"
+            elif spread <= ed["tp"]:
+                exit_reason = "TP"
+            elif z < EXIT_Z:
+                exit_reason = "EXIT_Z"
+
+        if exit_reason:
+            risk = abs(ed["entry_spread"] - ed["sl"])
+            if risk <= 0:
+                risk = atr_safe
+            ret = (spread - ed["entry_spread"]) * pos
+            cost_R = COST * abs(ed["entry_spread"]) / risk
+            r = ret / risk - cost_R
+
+            close_position(name, spread, r, exit_reason)
+            print(f"  *** ZAMKNIĘCIE {name}: {exit_reason} R={r:.3f} "
+                  f"(entry={ed['entry_spread']:.6f} exit={spread:.6f})")
+
+            # Circuit breaker
+            if r < -0.5:
+                cons_losses[name] += 1
+                if cons_losses[name] >= CB_MAX_LOSSES:
+                    cb_until[name] = datetime.now(timezone.utc) + timedelta(hours=CB_COOLDOWN_H)
+                    print(f"  🔴 {name}: CB aktywowany – {CB_COOLDOWN_H}H blokada")
+            else:
+                cons_losses[name] = 0
+
+            positions[name]  = 0
+            entry_data[name] = None
+
+# ==================================================
 # GŁÓWNA PĘTLA
 # ==================================================
 def main():
@@ -142,11 +240,14 @@ def main():
     print(f"SL_MULT: {SL_MULT} | RR: {RR} | Interval: {CHECK_EVERY//60}min")
     print("=" * 50)
 
-    # Stan pozycji
-    positions = {name: 0        for _,_,name,_ in PAIRS}
-    entry_data = {name: None    for _,_,name,_ in PAIRS}
-    cons_losses = {name: 0      for _,_,name,_ in PAIRS}
-    cb_until    = {name: None   for _,_,name,_ in PAIRS}
+    # Stan pozycji (PAIRS to 3-krotki: sym1, sym2, name)
+    positions    = {name: 0     for _, _, name in PAIRS}
+    entry_data   = {name: None  for _, _, name in PAIRS}
+    cons_losses  = {name: 0     for _, _, name in PAIRS}
+    cb_until     = {name: None  for _, _, name in PAIRS}
+    # Timestamp ostatniej PRZETWORZONEJ świecy 4h per para — bramka anty-churn:
+    # decyzje zapadają tylko gdy pojawi się nowa domknięta świeca.
+    last_candle  = {name: None  for _, _, name in PAIRS}
 
     # Wczytaj otwarte pozycje z CSV
     open_pos = load_open_positions()
@@ -162,106 +263,14 @@ def main():
     while True:
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
+        # try/except wokół KAŻDEJ pary — błąd jednej (np. sieć/limit) nie może
+        # wywalić całej pętli ani zatrzymać monitorowania pozostałych par.
         for a1, a2, name in PAIRS:
-            # Pobierz dane
-            z, spread, atr = get_zscore_live(a1, a2)
-            if z is None or np.isnan(z):
-                print(f"[{now}] {name}: brak danych")
-                continue
-
-            print(f"[{now}] {name}: Z={z:.3f} spread={spread:.6f} atr={atr:.6f}")
-
-            # Circuit breaker
-            if cb_until[name] is not None:
-                if datetime.now(timezone.utc) < cb_until[name]:
-                    print(f"  ⚠️  {name}: CB aktywny do {cb_until[name].strftime('%H:%M UTC')}")
-                    continue
-                else:
-                    cb_until[name] = None
-                    cons_losses[name] = 0
-                    print(f"  ✅ {name}: circuit breaker wygasł")
-
-            pos = positions[name]
-            atr_safe = max(atr, abs(spread) * 0.005)  # min 0.5% spreadu
-
-            # ── WEJŚCIE ──────────────────────────────
-            if pos == 0:
-                if z < -ENTRY_Z:
-                    # LONG spread: oczekujemy wzrostu spreadu
-                    # SL poniżej entry (spread spada dalej = strata)
-                    # TP powyżej entry (spread rośnie = zysk)
-                    sl = spread - SL_MULT * atr_safe
-                    tp = spread + RR * SL_MULT * atr_safe
-                    direction = f"LONG_{a1.split('/')[0]}_SHORT_{a2.split('/')[0]}"
-                    positions[name]  = 1
-                    entry_data[name] = {
-                        "entry_spread": spread, "sl": sl, "tp": tp,
-                        "entry_z": z, "entry_time": now, "direction": direction
-                    }
-                    write_open(now, name, direction, z, spread, spread, sl, tp,
-                               abs(1.0 / atr_safe) if atr_safe > 0 else 0, spread * 100)
-                    print(f"  *** LONG {name} Z={z:.2f} entry={spread:.6f} SL={sl:.6f} TP={tp:.6f}")
-
-                elif z > ENTRY_Z:
-                    # SHORT spread: oczekujemy spadku spreadu
-                    # SL powyżej entry (spread rośnie dalej = strata)
-                    # TP poniżej entry (spread spada = zysk)
-                    sl = spread + SL_MULT * atr_safe
-                    tp = spread - RR * SL_MULT * atr_safe
-                    direction = f"SHORT_{a1.split('/')[0]}_LONG_{a2.split('/')[0]}"
-                    positions[name]  = -1
-                    entry_data[name] = {
-                        "entry_spread": spread, "sl": sl, "tp": tp,
-                        "entry_z": z, "entry_time": now, "direction": direction
-                    }
-                    write_open(now, name, direction, z, spread, spread, sl, tp,
-                               abs(1.0 / atr_safe) if atr_safe > 0 else 0, spread * 100)
-                    print(f"  *** SHORT {name} Z={z:.2f} entry={spread:.6f} SL={sl:.6f} TP={tp:.6f}")
-
-            # ── WYJŚCIE ──────────────────────────────
-            else:
-                ed = entry_data[name]
-                exit_reason = None
-
-                if pos == 1:  # LONG – oczekujemy wzrostu spreadu
-                    if spread <= ed["sl"]:
-                        exit_reason = "SL"
-                    elif spread >= ed["tp"]:
-                        exit_reason = "TP"
-                    elif z > -EXIT_Z:
-                        exit_reason = "EXIT_Z"
-
-                else:  # SHORT – oczekujemy spadku spreadu
-                    if spread >= ed["sl"]:
-                        exit_reason = "SL"
-                    elif spread <= ed["tp"]:
-                        exit_reason = "TP"
-                    elif z < EXIT_Z:
-                        exit_reason = "EXIT_Z"
-
-                if exit_reason:
-                    risk = abs(ed["entry_spread"] - ed["sl"])
-                    if risk <= 0:
-                        risk = atr_safe
-                    ret = (spread - ed["entry_spread"]) * pos
-                    cost_R = COST * abs(ed["entry_spread"]) / risk
-                    r = ret / risk - cost_R
-
-                    close_position(name, spread, r, exit_reason)
-                    print(f"  *** ZAMKNIĘCIE {name}: {exit_reason} R={r:.3f} "
-                          f"(entry={ed['entry_spread']:.6f} exit={spread:.6f})")
-
-                    # Circuit breaker
-                    if r < -0.5:
-                        cons_losses[name] += 1
-                        if cons_losses[name] >= CB_MAX_LOSSES:
-                            cb_until[name] = datetime.now(timezone.utc) + timedelta(hours=CB_COOLDOWN_H)
-                            print(f"  🔴 {name}: CB aktywowany – {CB_COOLDOWN_H}H blokada")
-                    else:
-                        cons_losses[name] = 0
-
-                    positions[name]  = 0
-                    entry_data[name] = None
+            try:
+                process_pair(now, a1, a2, name,
+                             positions, entry_data, cons_losses, cb_until, last_candle)
+            except Exception as e:
+                print(f"[{now}] {name}: błąd przetwarzania — {e}")
 
         time.sleep(CHECK_EVERY)
 
