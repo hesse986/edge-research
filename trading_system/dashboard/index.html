@@ -257,6 +257,24 @@ function renderProcesses(data) {
   }).join('');
 }
 
+function renderHypotheses(data) {
+  const rows = (data && data.hypotheses) || [];
+  const counts = {GREEN:0, ORANGE:0, RED:0};
+  rows.forEach(r => counts[r.status] = (counts[r.status] || 0) + 1);
+  document.getElementById('hyp-summary').textContent =
+    `${rows.length} hipotez — 🟢 ${counts.GREEN} GREEN · 🟡 ${counts.ORANGE} ORANGE · 🔴 ${counts.RED} RED`;
+  const dotFor = s => s === 'GREEN' ? 'dot-green' : s === 'ORANGE' ? 'dot-yellow' : 'dot-red';
+  const body = document.getElementById('hypotheses-body');
+  body.innerHTML = rows.map(r => `
+    <tr>
+      <td style="white-space:nowrap;"><span class="dot ${dotFor(r.status)}"></span>${r.status}</td>
+      <td>${r.name}</td>
+      <td class="gray">${r.edge || '—'}</td>
+      <td class="gray">${r.priority || '—'}</td>
+      <td class="gray" style="font-size:11px;">${r.reason}</td>
+    </tr>`).join('') || '<tr><td colspan="5" class="gray">Brak hipotez w kolejce</td></tr>';
+}
+
 
 let spreadChart = null;
 let currentPair = 'ada_link';
@@ -342,12 +360,13 @@ async function loadSpreadChart(pair) {
 
 async function loadAll() {
   try {
-    const [stats, eq, pos, zs, procs] = await Promise.all([
+    const [stats, eq, pos, zs, procs, hyps] = await Promise.all([
       fetch('/api/stats').then(r=>r.json()),
       fetch('/api/equity').then(r=>r.json()),
       fetch('/api/positions').then(r=>r.json()),
       fetch('/api/zscore').then(r=>r.json()),
       fetch('/api/processes').then(r=>r.json()),
+      fetch('/api/hypotheses').then(r=>r.json()),
     ]);
     renderStats(stats);
     renderEquity(eq);
@@ -355,6 +374,7 @@ async function loadAll() {
     renderPositions(pos);
     renderZscore(zs);
     renderProcesses(procs);
+    renderHypotheses(hyps);
     loadSpreadChart(currentPair);
   } catch(e) {
     document.getElementById('updated').textContent = 'Błąd połączenia z serwerem';
@@ -379,6 +399,20 @@ setInterval(loadAll, 30000); // auto-refresh co 30 sekund
     </div>
     <canvas id="spread-chart" style="max-height:180px;"></canvas>
     <div id="spread-levels" style="display:flex;gap:16px;margin-top:8px;font-size:11px;"></div>
+  </div>
+</div>
+
+<!-- Nowe edge / kolejka do testów -->
+<div style="padding:0 24px 16px;">
+  <div class="card">
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+      <span>Nowe edge / kolejka do testów</span>
+      <span id="hyp-summary" class="gray" style="font-size:11px;font-weight:normal;">Ładowanie…</span>
+    </div>
+    <table>
+      <tr><th>Status</th><th>Nazwa</th><th>Edge</th><th>Priorytet</th><th>Powód</th></tr>
+      <tbody id="hypotheses-body"><tr><td colspan="5" class="gray">Ładowanie…</td></tr></tbody>
+    </table>
   </div>
 </div>
 

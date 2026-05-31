@@ -124,6 +124,15 @@ def zscore():
         )
     return result
 
+@app.get("/api/hypotheses")
+def hypotheses():
+    """Triage kolejki hipotez (GREEN/ORANGE/RED + powód). Tylko klasyfikacja."""
+    try:
+        from trading_system.research.triage_hypotheses import triage_hypotheses
+        return {"hypotheses": triage_hypotheses()}
+    except Exception as e:
+        return {"hypotheses": [], "error": str(e)}
+
 @app.get("/", response_class=HTMLResponse)
 def dashboard():
     return (Path(__file__).parent / "index.html").read_text()
