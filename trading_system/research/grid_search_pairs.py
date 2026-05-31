@@ -154,16 +154,20 @@ def main():
     df = pd.DataFrame(results)
     print(f"\nZakończono {len(df)} testów z wynikami.")
 
-    # Top 10 na walidacji z dodatnim forward testem
-    df_valid = df[(df["val_pctMR"] >= 90) & (df["fwd_expR"].notna()) & (df["fwd_expR"] > 0)]
-    df_valid = df_valid.sort_values("val_pctMR", ascending=False)
+    # SELEKCJA WYŁĄCZNIE NA WALIDACJI (audyt 3.2).
+    # Forward MUSI zostać out-of-sample, więc NIE filtrujemy po fwd_expR — forward
+    # jest tylko raportowany obok, raz, i nie wpływa na wybór konfiguracji.
+    df_valid = df[df["val_pctMR"] >= 90].copy()
+    df_valid = df_valid.sort_values(["val_pctMR", "val_expR"], ascending=False)
 
-    print(f"\n=== TOP 10 konfiguracji (val_pctMR>=90%, fwd_expR>0) ===")
+    print(f"\n=== TOP 10 konfiguracji (selekcja: val_pctMR>=90%) ===")
+    print("(fwd_R pokazany TYLKO informacyjnie — nie był kryterium wyboru)")
     print(f"{'Para':<10} {'entry_z':<8} {'exit_z':<7} {'lb':<4} {'sl':<4} {'cal_R':<7} {'val_pctMR':<10} {'fwd_R':<7}")
     print("-" * 65)
     for _, row in df_valid.head(10).iterrows():
+        fwd = f"{row['fwd_expR']:<7.4f}" if pd.notna(row['fwd_expR']) else f"{'n/a':<7}"
         print(f"{row['pair']:<10} {row['entry_z']:<8} {row['exit_z']:<7} {row['lookback']:<4} {row['sl_mult']:<4} "
-              f"{row['cal_expR']:<7.4f} {row['val_pctMR']:<10.1f} {row['fwd_expR']:<7.4f}")
+              f"{row['cal_expR']:<7.4f} {row['val_pctMR']:<10.1f} {fwd}")
 
     # Zapisz wyniki
     out = Path("trading_system/research/grid_search_results.csv")
