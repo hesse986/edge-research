@@ -4,16 +4,19 @@
 import time
 import csv
 import numpy as np
+import pandas as pd
 import requests
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 import sys
 sys.path.insert(0, '.')
+from trading_system.research.hedge import compute_spread, beta_window_for
 
 # ==================================================
 # KONFIGURACJA
 # ==================================================
 LOOKBACK   = 30
+BETA_MULT  = 4         # okno bety = BETA_MULT × LOOKBACK (jak w backteście)
 ENTRY_Z    = 2.0
 EXIT_Z     = 0.5
 SL_MULT    = 1.5
@@ -23,10 +26,12 @@ CHECK_EVERY = 3 * 60   # 3 minuty
 
 BASE_LOG = Path("paper_trades_pairs_advanced_R.csv")
 
+# Beta NIE jest już hardkodowana — liczona rolling-OLS out-of-sample tym samym
+# helperem co backtest (compute_spread), więc spread live == spread research.
 PAIRS = [
-    ("LTC/USDT",  "ADA/USDT",  "ltc_ada",  19.0200),
-    ("ADA/USDT",  "LINK/USDT", "ada_link",  0.0199),
-    ("BNB/USDT",  "SOL/USDT",  "bnb_sol",   0.0393),
+    ("LTC/USDT",  "ADA/USDT",  "ltc_ada"),
+    ("ADA/USDT",  "LINK/USDT", "ada_link"),
+    ("BNB/USDT",  "SOL/USDT",  "bnb_sol"),
 ]
 
 CB_MAX_LOSSES = 3
@@ -35,18 +40,28 @@ CB_COOLDOWN_H = 24
 # ==================================================
 # POBIERANIE DANYCH
 # ==================================================
-def get_zscore_live(sym1, sym2, hedge, lookback=LOOKBACK):
-    """Live Z-score z Binance API (identycznie jak dashboard)."""
-    needed = lookback + 10
+def get_zscore_live(sym1, sym2, lookback=LOOKBACK, beta_mult=BETA_MULT):
+    """Live Z-score z Binance API.
+
+    Spread liczony tym samym helperem co backtest (rolling OLS, beta z danych < i),
+    więc spread live jest identyczny metodologicznie z research. Beta nie jest
+    już hardkodowana — re-estymowana z okna [i-window, i-1] na każdej świecy.
+    """
+    window = beta_window_for(lookback, beta_mult)
+    needed = window + lookback + 10
     url = "https://api.binance.com/api/v3/klines"
     try:
         r1 = requests.get(url, params={"symbol": sym1.replace("/",""), "interval": "4h", "limit": needed}, timeout=10)
         r2 = requests.get(url, params={"symbol": sym2.replace("/",""), "interval": "4h", "limit": needed}, timeout=10)
         p1 = [float(c[4]) for c in r1.json()]
         p2 = [float(c[4]) for c in r2.json()]
-        if len(p1) < lookback or len(p2) < lookback:
+        n = min(len(p1), len(p2))
+        if n < window + lookback:
             return None, None, None
-        spread = [p1[i] - hedge * p2[i] for i in range(len(p1))]
+        # Spread out-of-sample (rolling OLS) — ten sam kod co backtest.
+        spread = compute_spread(pd.Series(p1[-n:]), pd.Series(p2[-n:]), window).dropna().to_numpy()
+        if len(spread) < lookback:
+            return None, None, None
         mean = np.mean(spread[-lookback:])
         std  = np.std(spread[-lookback:])
         z    = (spread[-1] - mean) / std if std > 0 else 0
@@ -147,9 +162,9 @@ def main():
     while True:
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-        for a1, a2, name, hedge in PAIRS:
+        for a1, a2, name in PAIRS:
             # Pobierz dane
-            z, spread, atr = get_zscore_live(a1, a2, hedge)
+            z, spread, atr = get_zscore_live(a1, a2)
             if z is None or np.isnan(z):
                 print(f"[{now}] {name}: brak danych")
                 continue
