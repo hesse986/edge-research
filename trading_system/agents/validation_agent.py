@@ -31,54 +31,70 @@ def deflated_sharpe_ratio(
 ) -> dict:
     """
     Deflated Sharpe Ratio – koryguje SR o liczbę testowanych konfiguracji.
-    
+
     Wzór (Bailey & Lopez de Prado 2014):
-    DSR = SR* * sqrt(T) / sigma
-    gdzie SR* = benchmark SR uwzględniający n_trials
-    
+
+        DSR = Φ[ (SR_hat - SR0) · sqrt(T-1) / sqrt(1 - γ3·SR_hat + (γ4-1)/4·SR_hat²) ]
+
+    KLUCZOWE: SR_hat i SR0 są PER-OKRES (NIE zannualizowane). Człon korekcyjny
+    skośność/kurtoza oczekuje SR per-okres — wstawienie SR×√252 zawyżałoby SR²
+    i psuło statystykę (audyt 3.3). γ4 to kurtoza SUROWA (normalna = 3), a
+    pandas.kurt() zwraca kurtozę NADMIAROWĄ, więc dodajemy +3.
+
+    Benchmark SR0 (oczekiwane maksimum SR z n_trials prób) jest w jednostkach
+    odchylenia standardowego estymatora SR, więc skalujemy go przez SE(SR_hat),
+    by porównanie było spójne jednostkowo z SR per-okres.
+
     Returns:
-        dict: sr, dsr, pvalue, is_significant
+        dict: sr (annualized, do raportu), sr_periodic, sr_benchmark, dsr_stat,
+              pvalue, is_significant, ...
     """
     T = len(returns)
     if T < 10:
-        return {"sr": 0, "dsr": 0, "pvalue": 1.0, "is_significant": False}
-    
-    sr = sharpe_ratio(returns, periods_per_year)
-    
-    # Skewness i kurtosis zwrotów
-    skew = float(pd.Series(returns).skew())
-    kurt = float(pd.Series(returns).kurt())
-    
-    # Benchmark SR – oczekiwane maksimum z n_trials losowych testów
-    # Przybliżenie: E[max SR] ~ (1 - gamma) * Z^-1(1 - 1/n) + gamma * Z^-1(1 - 1/(n*e))
-    # gdzie gamma = 0.5772 (Euler-Mascheroni)
-    gamma = 0.5772156649
-    if n_trials > 1:
-        sr_benchmark = (1 - gamma) * norm.ppf(1 - 1/n_trials) + \
-                       gamma * norm.ppf(1 - 1/(n_trials * np.e))
-    else:
-        sr_benchmark = 0.0
-    
-    # Korekta o skewness i kurtosis (pełna formuła DSR)
-    inner = (1 - skew * sr + (kurt - 1) / 4 * sr**2) / (T - 1)
+        return {"sr": 0, "sr_periodic": 0, "sr_benchmark": 0,
+                "dsr_stat": 0, "pvalue": 1.0, "is_significant": False,
+                "n_trials": n_trials, "T": T, "skew": 0, "kurt": 0}
+
+    r = np.asarray(returns, dtype=float)
+    std = r.std(ddof=1)
+    sr_periodic = float(r.mean() / std) if std > 0 else 0.0   # SR per-okres (NIE annualizowany)
+    sr_annual   = float(sr_periodic * np.sqrt(periods_per_year))  # tylko do raportu
+
+    # Skośność i kurtoza zwrotów
+    skew = float(pd.Series(r).skew())
+    kurt_raw = float(pd.Series(r).kurt()) + 3.0   # pandas.kurt() = nadmiarowa → surowa
+
+    # SE estymatora SR (Mertens/Lo) na SR per-okres
+    inner = (1 - skew * sr_periodic + (kurt_raw - 1) / 4 * sr_periodic**2) / (T - 1)
     if inner <= 0:
         inner = 1.0 / (T - 1)
-    correction = np.sqrt(inner)
-    
-    # DSR = P(SR > SR_benchmark)
-    dsr_stat = (sr - sr_benchmark) / correction if correction > 0 else 0
+    se_sr = np.sqrt(inner)
+
+    # Oczekiwane maksimum SR z n_trials prób (w jednostkach SD estymatora SR):
+    # E[max] ≈ (1-γ)·Z^-1(1-1/N) + γ·Z^-1(1-1/(N·e)), γ = Euler-Mascheroni
+    gamma = 0.5772156649
+    if n_trials > 1:
+        expected_max_z = ((1 - gamma) * norm.ppf(1 - 1/n_trials) +
+                          gamma * norm.ppf(1 - 1/(n_trials * np.e)))
+    else:
+        expected_max_z = 0.0
+    sr_benchmark = se_sr * expected_max_z   # benchmark w jednostkach SR per-okres
+
+    # DSR = P(SR_hat > SR0)
+    dsr_stat = (sr_periodic - sr_benchmark) / se_sr if se_sr > 0 else 0.0
     pvalue = 1 - norm.cdf(dsr_stat)
-    
+
     return {
-        "sr":              round(sr, 3),
-        "sr_benchmark":    round(sr_benchmark, 3),
+        "sr":              round(sr_annual, 3),      # annualized (czytelność)
+        "sr_periodic":     round(sr_periodic, 5),
+        "sr_benchmark":    round(sr_benchmark, 5),
         "dsr_stat":        round(dsr_stat, 3),
         "pvalue":          round(pvalue, 4),
         "is_significant":  pvalue < 0.05,
         "n_trials":        n_trials,
         "T":               T,
         "skew":            round(skew, 3),
-        "kurt":            round(kurt, 3)
+        "kurt":            round(kurt_raw, 3)
     }
 
 
