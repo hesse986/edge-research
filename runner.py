@@ -10,50 +10,8 @@ import pandas as pd
 from datetime import datetime
 
 import data as datamod
-try:
-    from trading_system.research.pairs_validation import pairs_pctMR as _pairs_pctMR
-    HAS_PAIRS_VALIDATION = True
-except:
-    HAS_PAIRS_VALIDATION = False
-
-PAIRS_EDGES = {
-    "pairs_cointegration_ltc_xrp",
-    "pairs_cointegration",
-    "btc_eth_spread",
-    "ltc_xrp_spread",
-}
-
-def compute_pctMR(edge_name, spread_or_df, res, df, indices, dirs, cost, max_hold, direction, params=None):
-    """
-    Wybiera właściwy benchmark w zależności od typu edge'a.
-    Dla pairs trading: permutation test na spreadzie.
-    Dla pozostałych: matched random.
-    """
-    if HAS_PAIRS_VALIDATION and edge_name in PAIRS_EDGES:
-        # Permutation test - wymaga spreadu
-        if spread_or_df is not None:
-            try:
-                result = _pairs_pctMR(
-                    spread_or_df,
-                    entry_z    = params.get("entry_z",  2.0) if params else 2.0,
-                    exit_z     = params.get("exit_z",   0.5) if params else 0.5,
-                    lookback   = params.get("lookback", 30)  if params else 30,
-                    sl_mult    = params.get("sl_mult",  1.5) if params else 1.5,
-                    n_permutations = 300
-                )
-                return result["pctMR"], result["pctMR"]  # pctMR, pctTS
-            except Exception as e:
-                pass
-    # Domyślny benchmark
-    mr_dist = matched_random(df, len(indices), cost, max_hold, RANDOM_RUNS, direction)
-    ts_dist = time_shift(df, indices, dirs, cost, max_hold, RANDOM_RUNS)
-    return pct_of(np.mean([t[0] for t in []]) if not res else pct_of(expectancy(res), mr_dist),
-                  mr_dist), pct_of(expectancy(res), ts_dist)
-
-
 import edges as edgemod
 import premium_edges as pe
-import data as datamod
 try:
     from trading_system.research.pairs_validation import pairs_pctMR as _pairs_pctMR
     HAS_PAIRS_VALIDATION = True
@@ -66,33 +24,6 @@ PAIRS_EDGES = {
     "btc_eth_spread",
     "ltc_xrp_spread",
 }
-
-def compute_pctMR(edge_name, spread_or_df, res, df, indices, dirs, cost, max_hold, direction, params=None):
-    """
-    Wybiera właściwy benchmark w zależności od typu edge'a.
-    Dla pairs trading: permutation test na spreadzie.
-    Dla pozostałych: matched random.
-    """
-    if HAS_PAIRS_VALIDATION and edge_name in PAIRS_EDGES:
-        # Permutation test - wymaga spreadu
-        if spread_or_df is not None:
-            try:
-                result = _pairs_pctMR(
-                    spread_or_df,
-                    entry_z    = params.get("entry_z",  2.0) if params else 2.0,
-                    exit_z     = params.get("exit_z",   0.5) if params else 0.5,
-                    lookback   = params.get("lookback", 30)  if params else 30,
-                    sl_mult    = params.get("sl_mult",  1.5) if params else 1.5,
-                    n_permutations = 300
-                )
-                return result["pctMR"], result["pctMR"]  # pctMR, pctTS
-            except Exception as e:
-                pass
-    # Domyślny benchmark
-    mr_dist = matched_random(df, len(indices), cost, max_hold, RANDOM_RUNS, direction)
-    ts_dist = time_shift(df, indices, dirs, cost, max_hold, RANDOM_RUNS)
-    return pct_of(np.mean([t[0] for t in []]) if not res else pct_of(expectancy(res), mr_dist),
-                  mr_dist), pct_of(expectancy(res), ts_dist)
 
 
 # ============================================================
