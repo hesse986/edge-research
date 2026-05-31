@@ -5,6 +5,7 @@ a interwaly 4h i Daily wyliczamy lokalnie przez resampling. Dzieki temu
 kolejne uruchomienia sa natychmiastowe i wszystkie interwaly sa spojne.
 """
 import os
+from pathlib import Path
 import numpy as np
 import pandas as pd
 
