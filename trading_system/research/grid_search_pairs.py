@@ -3,14 +3,15 @@ Grid Search dla Pairs Trading – własna implementacja bez vectorbt.
 Testuje setki kombinacji parametrów na danych historycznych.
 Używa walk-forward validation żeby uniknąć overfittingu.
 """
-import sys
+import sys, os
 sys.path.insert(0, '.')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 import pandas as pd
 from itertools import product
-from sklearn.linear_model import LinearRegression
 from pathlib import Path
 import data as datamod
+from hedge import compute_spread, beta_window_for
 import csv
 from datetime import datetime
 
@@ -83,12 +84,10 @@ def compute_metrics(trades):
     return {"n": len(r), "exp_R": round(exp_R,4), "sharpe": round(sr,3),
             "pf": round(pf,3), "wr": round(wr,3), "pctMR": round(pctMR,1)}
 
-def get_spread(df1, df2):
+def get_full_prices(df1, df2):
+    """Wyrównane ceny close na wspólnym indeksie (cały ciągły zakres)."""
     common = df1.index.intersection(df2.index)
-    p1 = df1.loc[common, "close"]
-    p2 = df2.loc[common, "close"]
-    model = LinearRegression().fit(p2.values.reshape(-1,1), p1.values)
-    return p1 - model.coef_[0] * p2
+    return df1.loc[common, "close"], df2.loc[common, "close"]
 
 # ============================================================
 # GŁÓWNA PĘTLA GRID SEARCH
@@ -111,23 +110,22 @@ def main():
     results = []
     done = 0
     for sym1, sym2 in PAIRS:
-        # Oblicz spread dla każdego okresu
-        spread_cal = get_spread(
-            data[sym1][data[sym1].index < CALIB_END],
-            data[sym2][data[sym2].index < CALIB_END]
-        )
-        spread_val = get_spread(
-            data[sym1][(data[sym1].index >= VAL_START) & (data[sym1].index < VAL_END)],
-            data[sym2][(data[sym2].index >= VAL_START) & (data[sym2].index < VAL_END)]
-        )
-        spread_fwd = get_spread(
-            data[sym1][data[sym1].index >= FORWARD_START],
-            data[sym2][data[sym2].index >= FORWARD_START]
-        )
+        # Ciągłe ceny na wspólnym indeksie. Spread liczymy raz na całym szeregu
+        # (rolling OLS, beta out-of-sample), a DOPIERO POTEM tniemy na okresy —
+        # dzięki temu val/forward dostają warmup bety z danych przeszłych,
+        # a beta nigdy nie podgląda przyszłości (audyt 3.1).
+        p1_full, p2_full = get_full_prices(data[sym1], data[sym2])
 
         for combo in combos:
             params = dict(zip(keys, combo))
             ez, xz, lb, sl = params["entry_z"], params["exit_z"], params["lookback"], params["sl_mult"]
+
+            # Okno bety zależy od lookbacku z-score (4×), więc spread per kombinacja.
+            spread_full = compute_spread(p1_full, p2_full, beta_window_for(lb))
+            idx = spread_full.index
+            spread_cal = spread_full[idx < CALIB_END]
+            spread_val = spread_full[(idx >= VAL_START) & (idx < VAL_END)]
+            spread_fwd = spread_full[idx >= FORWARD_START]
 
             t_cal = run_backtest(spread_cal, ez, xz, lb, sl)
             t_val = run_backtest(spread_val, ez, xz, lb, sl)

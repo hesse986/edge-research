@@ -13,9 +13,11 @@ Rozwiązanie:
 - Sprawdź czy prawdziwy spread daje lepsze wyniki
 """
 
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LinearRegression
+from hedge import compute_spread, beta_window_for
 
 
 def simulate_trades(spread, entry_z, exit_z, lookback, sl_mult, cost=0.0002):
@@ -146,14 +148,15 @@ def validate_pairs_full(sym1, sym2, periods, params,
         p1 = df1.loc[common, "close"]
         p2 = df2.loc[common, "close"]
 
-        model = LinearRegression().fit(p2.values.reshape(-1,1), p1.values)
-        spread = p1 - model.coef_[0] * p2
+        # Spread z betą out-of-sample (rolling OLS), okno = 4× lookback z-score.
+        lookback = params.get("lookback", 30)
+        spread = compute_spread(p1, p2, beta_window_for(lookback))
 
         result = pairs_pctMR(
             spread,
             entry_z    = params.get("entry_z",  2.0),
             exit_z     = params.get("exit_z",   0.5),
-            lookback   = params.get("lookback", 30),
+            lookback   = lookback,
             sl_mult    = params.get("sl_mult",  1.5),
             n_permutations = n_permutations
         )
